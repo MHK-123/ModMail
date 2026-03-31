@@ -1,0 +1,35 @@
+name: DungeonKeeper Bot
+
+on:
+  workflow_dispatch:       # allow manual trigger from GitHub UI
+  schedule:
+    - cron: "*/10 * * * *" # re-trigger every 10 min to keep bot alive after timeout
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: dungeonkeeper-bot
+      cancel-in-progress: false  # never interrupt a running bot instance
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run DungeonKeeper Bot
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+        run: |
+          echo "Bot starting at $(date)"
+          timeout 19200 python main.py || true   # 5h 20m — fits GitHub's 6h job limit
+          echo "Bot stopped at $(date)"
