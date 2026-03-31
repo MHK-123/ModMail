@@ -1,7 +1,7 @@
 # DungeonKeeper — Discord Bot
 
-A fully-featured Discord moderation bot for the DungeonKeeper server.
-Includes staff slash commands, automatic role onboarding, and a complete ModMail support system.
+A fully-featured Discord moderation & community bot for the **DungeonKeeper** server.
+Includes staff slash commands, automatic role onboarding DMs, and a complete ModMail support system.
 All bot logic lives in a single file: `main.py`.
 
 ---
@@ -16,9 +16,11 @@ All bot logic lives in a single file: `main.py`.
 - [ModMail System](#modmail-system)
 - [Staff Buttons](#staff-buttons)
 - [Automatic Behaviours](#automatic-behaviours)
+- [Log System](#log-system)
 - [Data Storage](#data-storage)
 - [Channel & Role IDs](#channel--role-ids)
 - [Deployment](#deployment)
+- [File Structure](#file-structure)
 
 ---
 
@@ -38,7 +40,7 @@ pip install discord.py python-dotenv
 python main.py
 ```
 
-The bot syncs all slash commands to the guild instantly on startup (guild-scoped, not global, so changes appear immediately).
+The bot syncs all slash commands to the guild instantly on startup (guild-scoped so changes appear immediately).
 
 > For full deployment instructions (local, Railway, Render, Hostinger VPS) see **[GUIDE.md](GUIDE.md)**.
 
@@ -71,7 +73,6 @@ Enable the following in your bot's OAuth2 invite URL and server permissions:
 | Manage Threads           | Archive and lock closed threads             |
 | Read Message History     | Read thread messages                        |
 | Mention Everyone         | Ping @everyone on new reports               |
-| Add Reactions            | Confirm message forwarding with reactions   |
 
 ---
 
@@ -79,10 +80,10 @@ Enable the following in your bot's OAuth2 invite URL and server permissions:
 
 Enable these in the [Discord Developer Portal](https://discord.com/developers/applications) under your bot's settings:
 
-| Intent                    | Reason                                            |
-|---------------------------|---------------------------------------------------|
-| **Server Members Intent** | Detect role changes for auto staff onboarding DM  |
-| **Message Content Intent**| Read DM content for ModMail                       |
+| Intent                     | Reason                                            |
+|----------------------------|---------------------------------------------------|
+| **Server Members Intent**  | Detect role changes for auto onboarding DMs       |
+| **Message Content Intent** | Read DM content for ModMail                       |
 
 ---
 
@@ -92,30 +93,28 @@ All commands are **Staff only** (Owner, Higher, or Staff role required).
 
 ### Moderation
 
-| Command       | Options                           | Description                                            |
-|---------------|-----------------------------------|--------------------------------------------------------|
-| `/dm`         | `user`, `message`, `embed`        | Send a private DM to any user. `embed` toggles styled embed (default: True). |
-| `/say`        | `message`, `embed`                | Post a message in the current channel. `embed` toggles styled embed (default: False). |
-| `/announce`   | `message`                         | Send a message to the announcements channel.           |
-| `/rules`      | `user`                            | Send a clickable rules channel mention to a user via DM. |
-| `/dm_warning` | `user`, `reason`                  | Send a formal warning DM to a user.                    |
+| Command       | Options                    | Description                                                               |
+|---------------|----------------------------|---------------------------------------------------------------------------|
+| `/dm`         | `user`, `message`, `embed` | Send a private DM to any user. `embed` toggles styled embed (default: True). |
+| `/say`        | `message`, `embed`         | Post a message in the current channel. `embed` toggles embed (default: False). |
+| `/announce`   | `message`                  | Send a message to the announcements channel.                              |
+| `/rules`      | `user`                     | Send a clickable rules channel mention to a user via DM.                  |
+| `/dm_warning` | `user`, `reason`           | Send a formal **⚠️ warning embed** DM to a user with reason included.    |
 
 ### ModMail Management
 
-| Command              | Options   | Description                                                  |
-|----------------------|-----------|--------------------------------------------------------------|
-| `/blacklist_add`     | `user_id` | Add a user ID to the ModMail blacklist.                      |
-| `/blacklist_remove`  | `user_id` | Remove a user ID from the ModMail blacklist.                 |
-| `/modmail_status`    | —         | Show count of active threads, pending, and blacklisted users.|
+| Command              | Options   | Description                                                   |
+|----------------------|-----------|---------------------------------------------------------------|
+| `/blacklist_add`     | `user_id` | Add a user ID to the ModMail blacklist.                       |
+| `/blacklist_remove`  | `user_id` | Remove a user ID from the ModMail blacklist.                  |
+| `/modmail_status`    | —         | Show count of active threads, pending, and blacklisted users. |
 
 ### The `embed` Parameter
 
-The `/dm` and `/say` commands include an optional `embed` boolean:
-
-| Command     | embed default | Effect when True                           | Effect when False          |
-|-------------|---------------|--------------------------------------------|----------------------------|
-| `/dm`       | `True`        | Sends a styled blurple embed with footer   | Sends plain bold text      |
-| `/say`      | `False`       | Sends a blurple embed in the channel       | Sends plain text           |
+| Command | embed default | Effect when True                         | Effect when False  |
+|---------|---------------|------------------------------------------|--------------------|
+| `/dm`   | `True`        | Sends a styled blurple embed with footer | Sends plain text   |
+| `/say`  | `False`       | Sends a blurple embed in the channel     | Sends plain text   |
 
 ---
 
@@ -137,9 +136,8 @@ Bot sends Support Embed
 Proceed    Cancel
    │         │
    ▼         ▼
-Support embed replaced   Session
-with "Ready to Help!"    ends
-embed (same message)
+"Ready to Help!"    Session
+embed shown         ends
    │
    ▼
 User sends their report message
@@ -153,14 +151,14 @@ User receives "✅ Request Received" embed
 
 ### Session States
 
-| State       | Description                                                                      |
-|-------------|----------------------------------------------------------------------------------|
-| No session  | User has never DM'd or previous session ended. Bot shows support embed.          |
-| Pending     | User clicked Proceed. Awaiting their report message. Times out in 5 minutes.     |
-| Active      | Thread exists. User's DMs are forwarded to the thread.                           |
-| Expired     | Pending state timed out after 5 minutes. User receives "⏱️ Session Expired" embed.|
-| Closed      | Staff clicked Close. Thread archived/locked. User receives "🔒 Request Closed" embed. |
-| Blacklisted | User is permanently blocked from creating new reports.                           |
+| State       | Description                                                                         |
+|-------------|-------------------------------------------------------------------------------------|
+| No session  | User has never DM'd or previous session ended. Bot shows support embed.             |
+| Pending     | User clicked Proceed. Awaiting their report message. Times out in 5 minutes.        |
+| Active      | Thread exists. User's DMs are forwarded to the thread.                              |
+| Expired     | Pending state timed out after 5 minutes. User receives "⏱️ Session Expired" embed. |
+| Closed      | Staff clicked Close. Thread archived/locked. User receives "🔒 Request Closed" embed.|
+| Blacklisted | User is permanently blocked from creating new reports.                              |
 
 ### Inactivity Timeout
 
@@ -169,11 +167,11 @@ User receives "✅ Request Received" embed
 
 ### Two-Way Communication
 
-| Direction           | How                                                                              |
-|---------------------|----------------------------------------------------------------------------------|
-| User → Staff        | User DMs the bot → forwarded as embed to the thread                             |
-| Staff → User        | Staff types in the thread → forwarded as embed to the user's DM                |
-| Staff → User (btn)  | Staff clicks Reply → fills modal → message sent to user's DM                   |
+| Direction          | How                                                                              |
+|--------------------|----------------------------------------------------------------------------------|
+| User → Staff       | User DMs the bot → forwarded as embed to the thread                             |
+| Staff → User       | Staff types in the thread → forwarded as embed to the user's DM                 |
+| Staff → User (btn) | Staff clicks Reply → fills modal → message sent to user's DM                   |
 
 ### Attachment Support
 
@@ -188,34 +186,60 @@ User receives "✅ Request Received" embed
 Buttons appear on the report embed in the report channel **and** inside the thread.
 They work from either location. All buttons are visible only to staff.
 
-| Button        | Action                                                                                               |
-|---------------|------------------------------------------------------------------------------------------------------|
-| **Reply**     | Opens a text modal. Typed message is sent to the user's DM as a staff reply embed. Echoed into the thread. |
-| **Warn**      | Opens a user select menu, then a reason modal. Sends a warning DM to the selected user. Logged.     |
-| **Mute**      | Opens a user select menu, then a reason modal. **Log only — does not apply a mute.**                |
-| **Ban**       | Opens a user select menu, then a reason modal. **Log only — does not apply a ban.**                 |
-| **Close**     | Clears the user's session, sends "🔒 Request Closed" embed to user, archives + locks the thread.    |
-| **Blacklist** | Adds the user to the blacklist permanently. Session is cleared. Cannot open new support requests.   |
+| Button        | Action                                                                                                |
+|---------------|-------------------------------------------------------------------------------------------------------|
+| **Reply**     | Opens a text modal. Typed message is sent to the user's DM as a staff reply embed. Echoed into thread.|
+| **Warn**      | Opens a user select menu, then a reason modal. Sends a warning DM. Logged.                           |
+| **Mute**      | Opens a user select menu, then a reason modal. **Log only — does not apply a mute.**                 |
+| **Ban**       | Opens a user select menu, then a reason modal. **Log only — does not apply a ban.**                  |
+| **Close**     | Clears the user's session, sends "🔒 Request Closed" embed to user, archives + locks the thread.     |
+| **Blacklist** | Adds the user to the blacklist permanently. Session is cleared. Cannot open new requests.            |
 
-> **Note:** Mute and Ban are intentionally log-only. Apply those manually in Discord.
+> **Note:** Mute and Ban are log-only. Apply those actions manually in Discord.
 
 ---
 
 ## Automatic Behaviours
 
+All automatic DMs are sent as **rich embeds** with the server icon thumbnail, timestamp, and branded footer.
+
 ### Staff Role Promotion DM
 
 When a member is **given** a Staff, Higher, or Owner role, the bot automatically:
-1. Sends them a plain-text promotion DM: *"Congratulations! You have been promoted to **{role}**..."*
-2. Logs the action in the log channel.
+1. Sends a **🎉 Congratulations on Your Promotion!** embed with:
+   - Role name and server name
+   - Link to the [Staff Guidelines](https://discord.com/channels/1318933846779101215/1486423070406213672/1487776297706061957)
+   - Next steps to follow
+2. Logs the promotion in the log channel.
 
 ### Staff Role Demotion DM
 
 When a member **loses** a Staff, Higher, or Owner role, the bot automatically:
-1. Sends them a plain-text demotion DM: *"You have been demoted from **{role}**..."*
-2. Logs the action in the log channel.
+1. Sends a **📉 Staff Role Update** embed with:
+   - Role removed and server name
+   - What to do next / who to contact
+2. Logs the demotion in the log channel.
 
-If the member has DMs disabled in either case, the bot logs a warning instead.
+### Event Manager Welcome DM
+
+When a member is **given** the Event Manager role, the bot automatically:
+1. Sends a **🎊 Welcome, Event Manager!** embed with:
+   - Personalised welcome message
+   - Link to the [Staff Guidelines](https://discord.com/channels/1318933846779101215/1486423070406213672/1487776297706061957)
+   - Role and server fields
+2. Logs the auto DM in the log channel.
+
+### Precious Member Welcome DM
+
+When a member is **given** the Precious Member role, the bot automatically:
+1. Sends a **💎 Welcome, Precious Member!** embed listing their perks:
+   - ✅ Can manage nicknames
+   - ✅ Can create threads
+   - ✅ Can make polls
+   - ✅ Can upload stickers & emojis
+2. Logs the auto DM in the log channel.
+
+> In all cases, if the member has DMs disabled the bot logs a warning instead.
 
 ---
 
@@ -226,38 +250,42 @@ Each embed has a title, **Target** and **Staff** inline fields, an optional **Re
 
 ### ModMail Logs
 
-| Action | Title | Colour |
-|---|---|---|
-| New report opened | 📬 New Report | Blurple |
-| Staff reply sent | 💬 Staff Reply | Green |
-| Thread closed | 🔒 Thread Closed | Red |
-| User blacklisted (button) | 🚫 User Blacklisted | Red |
-| `/blacklist_add` | 🚫 Blacklist Added | Red |
-| `/blacklist_remove` | ✅ Blacklist Removed | Green |
+| Action                    | Title                  | Colour  |
+|---------------------------|------------------------|---------|
+| New report opened         | 📬 New Report          | Blurple |
+| Staff reply sent          | 💬 Staff Reply         | Green   |
+| Thread closed             | 🔒 Thread Closed       | Red     |
+| User blacklisted (button) | 🚫 User Blacklisted    | Red     |
+| `/blacklist_add`          | 🚫 Blacklist Added     | Red     |
+| `/blacklist_remove`       | ✅ Blacklist Removed   | Green   |
 
 ### Moderation Logs
 
-| Action | Title | Colour |
-|---|---|---|
-| Warning modal | ⚠️ Warning Issued | Yellow |
-| Mute modal (log only) | 🔇 Mute Logged | Yellow |
-| Ban modal (log only) | 🔨 Ban Logged | Red |
-| `/dm` | 📨 DM Sent | Blurple |
-| `/dm_warning` | ⚠️ Warning DM | Yellow |
-| `/say` | 📢 Message Posted | Blurple |
-| `/announce` | 📣 Announcement | Blurple |
-| `/rules` | 📋 Rules Sent | Blurple |
+| Action               | Title               | Colour  |
+|----------------------|---------------------|---------|
+| Warning modal        | ⚠️ Warning Issued   | Yellow  |
+| Mute modal (log)     | 🔇 Mute Logged      | Yellow  |
+| Ban modal (log)      | 🔨 Ban Logged       | Red     |
+| `/dm`                | 📨 DM Sent          | Blurple |
+| `/dm_warning`        | ⚠️ Warning DM       | Yellow  |
+| `/say`               | 📢 Message Posted   | Blurple |
+| `/announce`          | 📣 Announcement     | Blurple |
+| `/rules`             | 📋 Rules Sent       | Blurple |
 
 ### Role Event Logs
 
-| Action | Title | Colour |
-|---|---|---|
-| Staff role given | 🎉 Promotion | Green |
-| Staff role removed | 📉 Demotion | Red |
-| Promotion DM failed | ⚠️ Promotion DM Failed | Yellow |
-| Demotion DM failed | ⚠️ Demotion DM Failed | Yellow |
+| Action                   | Title                    | Colour  |
+|--------------------------|--------------------------|---------|
+| Staff role given         | 🎉 Promotion             | Green   |
+| Staff role removed       | 📉 Demotion              | Red     |
+| Promotion DM failed      | ⚠️ Promotion DM Failed   | Yellow  |
+| Demotion DM failed       | ⚠️ Demotion DM Failed    | Yellow  |
+| Auto DM sent (any role)  | 📨 Auto DM Sent          | Blurple |
+| Auto DM failed           | ⚠️ Auto DM Failed        | Yellow  |
 
+---
 
+## Data Storage
 
 ModMail data is stored in `modmail_data.json` (auto-created on first use).
 
@@ -273,10 +301,10 @@ ModMail data is stored in `modmail_data.json` (auto-created on first use).
 }
 ```
 
-| Field      | Description                                                              |
-|------------|--------------------------------------------------------------------------|
-| `sessions` | Maps user IDs to their active report thread and channel message          |
-| `blacklist`| List of user IDs permanently blocked from the support system             |
+| Field       | Description                                                             |
+|-------------|-------------------------------------------------------------------------|
+| `sessions`  | Maps user IDs to their active report thread and channel message         |
+| `blacklist` | List of user IDs permanently blocked from the support system            |
 
 Sessions survive bot restarts. The pending state is **in-memory only** and resets on restart — those users will need to DM the bot again.
 
@@ -294,6 +322,8 @@ Sessions survive bot restarts. The pending state is **in-memory only** and reset
 | Owner Role            | `1456687923062767686` |
 | Higher Role           | `1459898023365709934` |
 | Staff Role            | `1318941651061833851` |
+| Event Manager Role    | `1338922160227483690` |
+| Precious Member Role  | `1330041993782624337` |
 
 ---
 
@@ -312,7 +342,7 @@ See **[GUIDE.md](GUIDE.md)** for full instructions covering:
 
 ```
 ModMail/
-├── main.py              — Entire bot: entry point, slash commands, ModMail, events
+├── main.py              — Entire bot: slash commands, ModMail, auto-DMs, events
 ├── modmail_data.json    — Persistent session and blacklist data (auto-created)
 ├── requirements.txt     — Python dependencies
 ├── .env                 — Bot token (not committed)

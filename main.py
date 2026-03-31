@@ -21,6 +21,8 @@ ANNOUNCEMENT_CHANNEL_ID = 1323890538881093735
 OWNER_ROLE_ID = 1456687923062767686
 HIGHER_ROLE_ID = 1459898023365709934
 STAFF_ROLE_ID = 1318941651061833851
+EVENT_MANAGER_ROLE_ID = 1338922160227483690
+PRECIOUS_MEMBER_ROLE_ID = 1330041993782624337
 
 STAFF_ROLE_IDS = {OWNER_ROLE_ID, HIGHER_ROLE_ID, STAFF_ROLE_ID}
 STAFF_RULES_LINK = "https://discord.com/channels/1318933846779101215/1486423070406213672/1487776297706061957"
@@ -429,6 +431,79 @@ async def on_member_update(before: discord.Member, after: discord.Member):
         except discord.Forbidden:
             await log(after.guild, "demotion_dm_fail", "System", str(after), "DMs disabled")
 
+    # ── Event Manager welcome ──────────────────────────────────────────────
+    if EVENT_MANAGER_ROLE_ID in (after_roles - before_roles):
+        role_obj  = after.guild.get_role(EVENT_MANAGER_ROLE_ID)
+        role_name = role_obj.name if role_obj else "Event Manager"
+        try:
+            em_embed = discord.Embed(
+                title="🎊 Welcome, Event Manager!",
+                description=(
+                    f"Hey **{after.display_name}**! 🎉\n\n"
+                    f"You've been granted the **{role_name}** role in **{after.guild.name}**.\n"
+                    f"We're excited to have you helping shape our community events!"
+                ),
+                color=discord.Color.from_str("#5865F2"),
+                timestamp=datetime.now(timezone.utc),
+            )
+            em_embed.add_field(
+                name="📋 Before You Start",
+                value=(
+                    f"• Review the [Staff Guidelines]({STAFF_RULES_LINK})\n"
+                    "• Uphold and follow our community standards\n"
+                    "• Reach out to senior staff with any questions"
+                ),
+                inline=False,
+            )
+            em_embed.add_field(
+                name="🎭 Your Role",
+                value=role_name,
+                inline=True,
+            )
+            em_embed.add_field(
+                name="🏰 Server",
+                value=after.guild.name,
+                inline=True,
+            )
+            em_embed.set_thumbnail(url=after.guild.icon.url if after.guild.icon else after.display_avatar.url)
+            em_embed.set_footer(text="DungeonKeeper • Welcome aboard! 🎊")
+            await after.send(embed=em_embed)
+            await log(after.guild, "auto_dm", "System", str(after), f"Event Manager welcome sent")
+        except discord.Forbidden:
+            await log(after.guild, "auto_dm_fail", "System", str(after), "DMs disabled – Event Manager welcome")
+
+    # ── Precious Member welcome ────────────────────────────────────────────
+    if PRECIOUS_MEMBER_ROLE_ID in (after_roles - before_roles):
+        role_obj  = after.guild.get_role(PRECIOUS_MEMBER_ROLE_ID)
+        role_name = role_obj.name if role_obj else "Precious Member"
+        try:
+            pm_embed = discord.Embed(
+                title="💎 Welcome, Precious Member!",
+                description=(
+                    f"Hey **{after.display_name}**! ✨\n\n"
+                    f"You've been granted the **{role_name}** role in **{after.guild.name}**.\n"
+                    f"Thank you for being a valued part of our community!"
+                ),
+                color=discord.Color.from_str("#F1C40F"),
+                timestamp=datetime.now(timezone.utc),
+            )
+            pm_embed.add_field(
+                name=f"🎁 What You Get as a {role_name}",
+                value=(
+                    "✅ Can manage nicknames\n"
+                    "✅ Can create threads\n"
+                    "✅ Can make polls\n"
+                    "✅ Can upload stickers & emojis"
+                ),
+                inline=False,
+            )
+            pm_embed.set_thumbnail(url=after.guild.icon.url if after.guild.icon else after.display_avatar.url)
+            pm_embed.set_footer(text="DungeonKeeper • We appreciate you! 💛")
+            await after.send(embed=pm_embed)
+            await log(after.guild, "auto_dm", "System", str(after), f"Precious Member welcome sent")
+        except discord.Forbidden:
+            await log(after.guild, "auto_dm_fail", "System", str(after), "DMs disabled – Precious Member welcome")
+
 def _support_embed() -> discord.Embed:
     e = discord.Embed(
         title="DungeonKeeper Support System",
@@ -689,13 +764,34 @@ async def rules(interaction: discord.Interaction, user: discord.Member):
 @bot.tree.command(name="dm_warning", description="Send a warning DM to a user.")
 @staff_only()
 async def dm_warning(interaction: discord.Interaction, user: discord.Member, reason: str):
-    message = f"Hey {user.display_name},\n\nYou are receiving a warning from the {interaction.guild.name} staff team.\n\nReason: {reason}\n\nPlease ensure you follow the server rules to avoid further action. If you believe this is a mistake, contact a staff member."
+    warn_embed = discord.Embed(
+        title="⚠️ Official Warning",
+        description=(
+            f"Hey **{user.display_name}**,\n\n"
+            f"You are receiving a warning from the **{interaction.guild.name}** staff team.\n"
+            f"Please ensure you follow the server rules to avoid further action."
+        ),
+        color=discord.Color.from_str("#FEE75C"),
+        timestamp=datetime.now(timezone.utc),
+    )
+    warn_embed.add_field(
+        name="📋 Reason",
+        value=reason,
+        inline=False,
+    )
+    warn_embed.add_field(
+        name="❓ Believe this is a mistake?",
+        value=f"Contact a staff member in <#{MODERATION_CHANNEL_ID}>.",
+        inline=False,
+    )
+    warn_embed.set_thumbnail(url=interaction.guild.icon.url if interaction.guild.icon else user.display_avatar.url)
+    warn_embed.set_footer(text="DungeonKeeper Moderation Team")
     try:
-        await user.send(message)
+        await user.send(embed=warn_embed)
         await interaction.response.send_message(f"Warning DM sent to {user.mention}.", ephemeral=True)
         await log(interaction.guild, "dm_warning", str(interaction.user), str(user), reason)
     except discord.Forbidden:
-        await interaction.response.send_message(f"Could not DM {user.mention}.", ephemeral=True)
+        await interaction.response.send_message(f"Could not DM {user.mention} (their DMs may be closed).", ephemeral=True)
 
 @bot.tree.command(name="blacklist_add", description="Add a user ID to the ModMail blacklist.")
 @staff_only()
