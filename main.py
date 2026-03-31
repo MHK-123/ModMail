@@ -353,10 +353,38 @@ async def on_member_update(before: discord.Member, after: discord.Member):
         role_obj  = after.guild.get_role(role_id)
         role_name = role_obj.name if role_obj else "Staff"
         try:
-            await after.send(
-                f"Congratulations! You have been promoted to **{role_name}** in {after.guild.name}.\n"
-                f"Please make sure you are familiar with the staff guidelines and uphold our community standards."
+            promo_embed = discord.Embed(
+                title="🎉 Congratulations on Your Promotion!",
+                description=(
+                    f"Welcome to the team, **{after.display_name}**! 🏆\n\n"
+                    f"You have been promoted to **⚒️ {role_name}** in **{after.guild.name}**.\n"
+                    f"We are thrilled to have you as part of the staff!"
+                ),
+                color=discord.Color.from_str("#57F287"),
+                timestamp=datetime.now(timezone.utc),
             )
+            promo_embed.add_field(
+                name="📋 Next Steps",
+                value=(
+                    "• Review the [Staff Guidelines](" + STAFF_RULES_LINK + ")\n"
+                    "• Uphold and enforce our community standards\n"
+                    "• Reach out to senior staff if you have any questions"
+                ),
+                inline=False,
+            )
+            promo_embed.add_field(
+                name="🛡️ Your New Role",
+                value=f"⚒️ {role_name}",
+                inline=True,
+            )
+            promo_embed.add_field(
+                name="🏰 Server",
+                value=after.guild.name,
+                inline=True,
+            )
+            promo_embed.set_thumbnail(url=after.guild.icon.url if after.guild.icon else after.display_avatar.url)
+            promo_embed.set_footer(text="DungeonKeeper Moderation Team • Congratulations! 🎊")
+            await after.send(embed=promo_embed)
             await log(after.guild, "promotion", "System", str(after), f"Promoted to {role_name}")
         except discord.Forbidden:
             await log(after.guild, "promotion_dm_fail", "System", str(after), "DMs disabled")
@@ -365,10 +393,38 @@ async def on_member_update(before: discord.Member, after: discord.Member):
         role_obj  = after.guild.get_role(role_id)
         role_name = role_obj.name if role_obj else "Staff"
         try:
-            await after.send(
-                f"You have been demoted from **{role_name}** in {after.guild.name}.\n"
-                f"If you have any questions regarding this decision, please reach out to a senior staff member."
+            demote_embed = discord.Embed(
+                title="📉 Staff Role Update",
+                description=(
+                    f"Hi **{after.display_name}**,\n\n"
+                    f"You have been demoted from **⚒️ {role_name}** in **{after.guild.name}**.\n"
+                    f"If you have any questions regarding this decision, please reach out to a senior staff member."
+                ),
+                color=discord.Color.from_str("#ED4245"),
+                timestamp=datetime.now(timezone.utc),
             )
+            demote_embed.add_field(
+                name="❓ What Now?",
+                value=(
+                    "• Contact a senior staff member for clarification\n"
+                    "• Continue following our community rules as a member\n"
+                    "• You may be reconsidered for staff in the future"
+                ),
+                inline=False,
+            )
+            demote_embed.add_field(
+                name="📌 Role Removed",
+                value=f"⚒️ {role_name}",
+                inline=True,
+            )
+            demote_embed.add_field(
+                name="🏰 Server",
+                value=after.guild.name,
+                inline=True,
+            )
+            demote_embed.set_thumbnail(url=after.guild.icon.url if after.guild.icon else after.display_avatar.url)
+            demote_embed.set_footer(text="DungeonKeeper Moderation Team • We wish you well.")
+            await after.send(embed=demote_embed)
             await log(after.guild, "demotion", "System", str(after), f"Demoted from {role_name}")
         except discord.Forbidden:
             await log(after.guild, "demotion_dm_fail", "System", str(after), "DMs disabled")
@@ -503,7 +559,7 @@ async def create_thread(message: discord.Message, user: discord.User):
     await log(guild, "opened", "System", str(user), message.content[:100] if message.content else "")
     confirm_embed = discord.Embed(
         title="✅ Request Received",
-        description="Your message has been sent to the **DungeonKeeper Moderation Team**.\nA staff member will respond to you as soon as possible.",
+        description="Your message has been sent to the **Moderation Team**.\nA staff member will respond to you as soon as possible.",
         color=discord.Color.green(),
     )
     confirm_embed.add_field(
