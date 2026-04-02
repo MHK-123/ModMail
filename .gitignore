@@ -1,0 +1,5 @@
+.env
+modmail_data.json
+__pycache__/
+*.pyc
+*.pyo
