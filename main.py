@@ -936,7 +936,14 @@ async def modmail_status(interaction: discord.Interaction):
 async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name: str, past_tense: str):
     await ctx.message.delete()
     gif_url = random.choice(GIFS[action_name])
-    await ctx.send(f"{gif_url}\n{ctx.author.mention} {past_tense} {target.mention}")
+    
+    # Using a minimalist embed with ONLY an image and a footer 
+    # to guarantee the GIF shows up on top with text below.
+    embed = discord.Embed(color=0x2b2d31) # Discord Dark Theme background color to hide stripe
+    embed.set_image(url=gif_url)
+    embed.set_footer(text=f"💖 {ctx.author.display_name} {past_tense} {target.display_name}!")
+    
+    await ctx.send(embed=embed)
 
 def premium_only_cmd():
     async def predicate(ctx: commands.Context) -> bool:
