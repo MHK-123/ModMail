@@ -34,37 +34,27 @@ STAFF_ROLE_IDS = {OWNER_ROLE_ID, HIGHER_ROLE_ID, STAFF_ROLE_ID}
 
 GIFS = {
     "hug": [
-        "https://media1.tenor.com/m/gdV0zgw4nZcAAAAC/hug.gif",
-        "https://media1.tenor.com/m/2bw-Zzp-mTMAAAAC/bear-hug.gif",
-        "https://media1.tenor.com/m/LiGTbtBFUdEAAAAC/peach-and-goma-hugging.gif",
-        "https://media1.tenor.com/m/LiGTbtBFUdEAAAAC/peach-and-goma-hugging.gif",
-        "https://media1.tenor.com/m/LiGTbtBFUdEAAAAC/peach-and-goma-hugging.gif"
+        "https://media1.tenor.com/m/NGFif4dxa-EAAAAC/hug-hugs.gif",
+        "https://media1.tenor.com/m/ZWnVRfAnxOcAAAAd/miss-you.gif",
+        "https://media1.tenor.com/m/KtQDZsfPMnQAAAAC/couple-couple-hug.gif"
     ],
     "kick": [
         "https://media1.tenor.com/m/TDQXdEBNNjUAAAAC/milk-and-mocha.gif",
-        "https://media1.tenor.com/m/6z7-Z_y_I20AAAAC/bubu-kick-dudu.gif",
-        "https://media1.tenor.com/m/sP57H0qA52MAAAAC/milk-and-mocha.gif",
-        "https://media1.tenor.com/m/rXW_XqZ2M-YAAAAC/kick.gif",
-        "https://media1.tenor.com/m/TDQXdEBNNjUAAAAC/milk-and-mocha.gif"
+        "https://media1.tenor.com/m/iHMz2YvHDvgAAAAC/anuragita-anuragita-couple.gif",
+        "https://media1.tenor.com/m/tmR_L4D-tNQAAAAC/get-out-of-here-kick.gif"
     ],
     "slap": [
         "https://media1.tenor.com/m/fZQYHVUDfckAAAAC/slap.gif",
-        "https://media1.tenor.com/m/tMVS_yML7t0AAAAC/slap-slaps.gif",
-        "https://media1.tenor.com/m/OY6vL9fL8P0AAAAC/cats-cat-slap.gif",
-        "https://media1.tenor.com/m/Z7sll98IcRMAAAAC/slap-hand-slap.gif",
-        "https://media1.tenor.com/m/4Y6vL9fL8P0AAAAC/slap.gif"
+        "https://media1.tenor.com/m/nFHxwVUqNZYAAAAC/taiga-toradora.gif",
+        "https://media1.tenor.com/m/THVaTmoOx7UAAAAC/midnightgif300.gif"
     ],
     "kiss": [
-        "https://media1.tenor.com/m/L-grpASXygAAAAC/bubuiak14kiss1.gif",
-        "https://media1.tenor.com/m/X6vL9fL8P0AAAAC/cosytales.gif",
-        "https://media1.tenor.com/m/Z6vL9fL8P0AAAAC/puuung.gif",
-        "https://media1.tenor.com/m/W6vL9fL8P0AAAAC/puuung-kiss.gif"
+        "https://media1.tenor.com/m/VcR7PqtHqkkAAAAd/besos.gif",
+        "https://media1.tenor.com/m/e4FVWGXwhSAAAAAC/kiss-love.gif"
     ],
     "punch": [
-        "https://media1.tenor.com/m/nF_grpASXygAAAAC/bubu-dudu.gif",
-        "https://media1.tenor.com/m/RiLHXlSdFd4AAAAC/facepunch-punch.gif",
-        "https://media1.tenor.com/m/6Cp5tiRwh-YAAAAC/meme-memes.gif",
-        "https://media1.tenor.com/m/8Cp5tiRwh-YAAAAC/punch.gif"
+        "https://media1.tenor.com/m/4gk1E75rDNYAAAAd/cat-punch.gif",
+        "https://media1.tenor.com/m/OLD43n7oSyoAAAAC/ppdaraa-punch.gif"
     ]
 }
 STAFF_RULES_LINK = "https://discord.com/channels/1318933846779101215/1486423070406213672/1487776297706061957"
@@ -939,10 +929,11 @@ async def modmail_status(interaction: discord.Interaction):
 async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name: str, past_tense: str):
     await ctx.message.delete()
     gif_url = random.choice(GIFS[action_name])
-    fallback_url = "https://media.tenor.com/LiGTbtBFUdEAAAAC/peach-and-goma-hugging.gif"
+    # Action-specific fallback (use first item of the same category)
+    fallback_url = GIFS[action_name][0]
     
     # ── Explicit Logging ──────────────────────────────────────────────────
-    print(f"GIF Selected: {action_name} -> {gif_url}")
+    print(f"ACTION: {action_name}, GIF: {gif_url}")
     
     # FINAL STABILIZED SOLUTION: Send as a native Discord file with safeguards
     try:
@@ -960,7 +951,7 @@ async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name
                 else:
                     # Log failure details for debugging
                     print(f"GIF Fetch Failed: {resp.status}, Content-Type: {resp.content_type}, URL: {gif_url}")
-                    # Fallback to direct stable GIF
+                    # Fallback to direct stable GIF from the SAME category
                     async with session.get(fallback_url, headers=headers) as fall_resp:
                         if fall_resp.status == 200:
                             fall_data = io.BytesIO(await fall_resp.read())
