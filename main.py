@@ -940,13 +940,13 @@ async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name
     await ctx.message.delete()
     gif_url = random.choice(GIFS[action_name])
     
-    # Send the GIF as a clean embed (no content, no blue link)
+    # 1. Send ONLY the GIF as a clean embed (absolutely no content, no URL in text)
     embed = discord.Embed()
     embed.set_image(url=gif_url)
-    await ctx.send(embed=embed)
+    await ctx.send(content=None, embed=embed)
         
-    # Send the action text separately
-    await ctx.send(f"{ctx.author.mention} {past_tense.capitalize()} {target.mention}")
+    # 2. Send the mention/text message separately AFTER the GIF
+    await ctx.send(content=f"{ctx.author.mention} {past_tense.capitalize()} {target.mention}")
 
 def premium_only_cmd():
     async def predicate(ctx: commands.Context) -> bool:
