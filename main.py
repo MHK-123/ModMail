@@ -33,35 +33,37 @@ STAFF_ROLE_IDS = {OWNER_ROLE_ID, HIGHER_ROLE_ID, STAFF_ROLE_ID}
 
 GIFS = {
     "hug": [
-        "https://klipy.com/gifs/mocha-and-milk-bears-cuddle",
-        "https://klipy.com/gifs/squish-hug",
-        "https://klipy.com/gifs/cat-2032",
-        "https://klipy.com/gifs/bunny-247",
-        "https://klipy.com/gifs/love-language-3"
+        "https://tenor.com/en-GB/view/cat-gif-6892218099699146160",
+        "https://tenor.com/en-GB/view/don-gif-9520776680112053549",
+        "https://tenor.com/en-GB/view/peach-and-goma-hugging-love-cute-gif-3324100104126026193",
+        "https://tenor.com/en-GB/view/hug-gif-16145194991064460629",
+        "https://tenor.com/en-GB/view/monkey-hug-monkeys-hugging-golden-monkeys-gif-11103289529249683769"
     ],
     "kick": [
-        "https://klipy.com/gifs/kickers-caught",
-        "https://klipy.com/gifs/milk-and-mocha-bear-couple-96",
-        "https://klipy.com/gifs/wildfireuv-70",
-        "https://klipy.com/gifs/chifuyu-chifuyu-kick",
-        "https://klipy.com/gifs/oh-yeah-high-kick"
-    ],
-    "kiss": [
-        "https://klipy.com/gifs/kiss-video-love-you",
-        "https://klipy.com/gifs/puuung-kiss-10",
-        "https://klipy.com/gifs/mwah-38"
+        "https://tenor.com/en-GB/view/oh-yeah-high-kick-take-down-fight-gif-14272509",
+        "https://tenor.com/en-GB/view/asdf-movie-punt-kick-donewiththis-gif-26537188",
+        "https://tenor.com/en-GB/view/bubu-kick-dudu-bubu-angry-bubu-dudu-love-gif-5644488481606895836",
+        "https://tenor.com/en-GB/view/milk-and-mocha-gif-16310787379898746257",
+        "https://tenor.com/en-GB/view/kickers-caught-gif-7775692"
     ],
     "slap": [
-        "https://klipy.com/gifs/dungeong-17",
-        "https://klipy.com/gifs/orange-cat-cat-hitting-cat",
-        "https://klipy.com/gifs/penguin-slap-4",
-        "https://klipy.com/gifs/slap-slaps-2",
-        "https://klipy.com/gifs/peach-and-goma-peach-cat-2"
+        "https://tenor.com/en-GB/view/dungeong-gif-3654754744145897317",
+        "https://tenor.com/en-GB/view/slap-slaps-enough-stop-stop-it-gif-13025908752997150429",
+        "https://tenor.com/en-GB/view/cats-cat-slap-slap-gif-2895385951685947789",
+        "https://tenor.com/en-GB/view/taiga-toradora-fast-slap-slap-baka-gif-11264049955690132886",
+        "https://tenor.com/en-GB/view/slap-gif-4486401254555935391"
+    ],
+    "kiss": [
+        "https://tenor.com/en-GB/view/bubuiak14kiss1-gif-13338760645080724504",
+        "https://tenor.com/en-GB/view/cosytales-love-chubby-valentine-shy-gif-15963472677482031132",
+        "https://tenor.com/en-GB/view/puuung-kiss-puuung-gif-14695589765038452485",
+        "https://tenor.com/en-GB/view/puuung-kiss-my-sonic-goober-gif-8039438698073654471"
     ],
     "punch": [
-        "https://klipy.com/gifs/one-punch-man-saitama",
-        "https://klipy.com/gifs/all-might-punch",
-        "https://klipy.com/gifs/anime-punch-1"
+        "https://tenor.com/en-GB/view/bubu-dudu-bubu-dudu-motki-motki-bubu-gif-11267971833050324776",
+        "https://tenor.com/en-GB/view/pepe-smash-punch-smile-gif-16883739",
+        "https://tenor.com/en-GB/view/facepunch-punch-minions-fine-happy-gif-5053820939823551966",
+        "https://tenor.com/en-GB/view/meme-memes-memes2022funny-meme-face-punch-gif-25436787"
     ]
 }
 STAFF_RULES_LINK = "https://discord.com/channels/1318933846779101215/1486423070406213672/1487776297706061957"
@@ -937,13 +939,9 @@ async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name
     await ctx.message.delete()
     gif_url = random.choice(GIFS[action_name])
     
-    # Using a minimalist embed with ONLY an image and a footer 
-    # to guarantee the GIF shows up on top with text below.
-    embed = discord.Embed(color=0x2b2d31) # Discord Dark Theme background color to hide stripe
-    embed.set_image(url=gif_url)
-    embed.set_footer(text=f"💖 {ctx.author.display_name} {past_tense} {target.display_name}!")
-    
-    await ctx.send(embed=embed)
+    # Send the GIF URL first, so it auto-embeds natively in Discord.
+    # The text/pings follow on the next line.
+    await ctx.send(f"{gif_url}\n{ctx.author.mention} {past_tense} {target.mention}")
 
 def premium_only_cmd():
     async def predicate(ctx: commands.Context) -> bool:
