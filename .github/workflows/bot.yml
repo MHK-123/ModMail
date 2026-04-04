@@ -1,4 +1,4 @@
-name: "🛡️ DungeonKeeper: High-Availability Bot Runner"
+name: " DungeonKeeper:  Bot Runner"
 
 on:
   workflow_dispatch: # Enable manual starting from GitHub Actions tab
