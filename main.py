@@ -942,9 +942,8 @@ async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name
     # Send the raw GIF URL first. Discord will automatically embed it as a clean GIF.
     await ctx.send(gif_url)
         
-    # Send the action text separately without pinging
-    allowed_mentions = discord.AllowedMentions(users=False)
-    await ctx.send(f"{ctx.author.mention} {past_tense.capitalize()} {target.mention}", allowed_mentions=allowed_mentions)
+    # Send the action text separately
+    await ctx.send(f"{ctx.author.mention} {past_tense.capitalize()} {target.mention}")
 
 def premium_only_cmd():
     async def predicate(ctx: commands.Context) -> bool:
