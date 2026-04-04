@@ -5,6 +5,10 @@ import os
 import asyncio
 import json
 from datetime import datetime, timezone
+import random
+import io
+import aiohttp
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -23,8 +27,38 @@ HIGHER_ROLE_ID = 1459898023365709934
 STAFF_ROLE_ID = 1318941651061833851
 EVENT_MANAGER_ROLE_ID = 1338922160227483690
 PRECIOUS_MEMBER_ROLE_ID = 1330041993782624337
+PREMIUM_ROLE_ID = 1489595969782943804
 
 STAFF_ROLE_IDS = {OWNER_ROLE_ID, HIGHER_ROLE_ID, STAFF_ROLE_ID}
+
+GIFS = {
+    "hug": [
+        "https://static.klipy.com/mocha-and-milk-bears-cuddle.gif",
+        "https://static.klipy.com/squish-hug.gif",
+        "https://static.klipy.com/cat-2032.gif",
+        "https://static.klipy.com/bunny-247.gif",
+        "https://static.klipy.com/love-language-3.gif"
+    ],
+    "kick": [
+        "https://static.klipy.com/kickers-caught.gif",
+        "https://static.klipy.com/milk-and-mocha-bear-couple-96.gif",
+        "https://static.klipy.com/wildfireuv-70.gif",
+        "https://static.klipy.com/chifuyu-chifuyu-kick.gif",
+        "https://static.klipy.com/oh-yeah-high-kick.gif"
+    ],
+    "kiss": [
+        "https://static.klipy.com/kiss-video-love-you.gif",
+        "https://static.klipy.com/puuung-kiss-10.gif",
+        "https://static.klipy.com/mwah-38.gif"
+    ],
+    "slap": [
+        "https://static.klipy.com/dungeong-17.gif",
+        "https://static.klipy.com/orange-cat-cat-hitting-cat.gif",
+        "https://static.klipy.com/penguin-slap-4.gif",
+        "https://static.klipy.com/slap-slaps-2.gif",
+        "https://static.klipy.com/peach-and-goma-peach-cat-2.gif"
+    ]
+}
 STAFF_RULES_LINK = "https://discord.com/channels/1318933846779101215/1486423070406213672/1487776297706061957"
 TIMEOUT_SECONDS = 300
 DATA_FILE = "modmail_data.json"
@@ -326,7 +360,7 @@ class ThreadView(discord.ui.View):
 
 class DungeonKeeperBot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix="!", intents=intents)
+        super().__init__(command_prefix=["!", "-"], intents=intents)
 
     async def setup_hook(self):
         self.add_view(ThreadView())
@@ -503,6 +537,63 @@ async def on_member_update(before: discord.Member, after: discord.Member):
             await log(after.guild, "auto_dm", "System", str(after), f"Precious Member welcome sent")
         except discord.Forbidden:
             await log(after.guild, "auto_dm_fail", "System", str(after), "DMs disabled – Precious Member welcome")
+
+    # ── Premium Member Flow ────────────────────────────────────────────────
+    if PREMIUM_ROLE_ID in (after_roles - before_roles):
+        try:
+            premium_embed = discord.Embed(
+                title="🎉 Purchase Successful! Welcome to Premium!",
+                description=(
+                    "Here’s everything you unlock:\n\n"
+                    "👑 **Exclusive Access**\n"
+                    "• Access to premium-only channels\n"
+                    "• Priority support & faster responses\n"
+                    "• Early access to new features\n\n"
+                    "🎨 **Customization**\n"
+                    "• Custom role (DM admin to set name/color/icon)\n"
+                    "• Use external emojis & stickers\n"
+                    "• Send embeds, links, and media freely\n\n"
+                    "🤖 **Premium Bot Commands**\n"
+                    "• `-kick @user` – Fun kick GIF interaction\n"
+                    "• `-slap @user` – Random slap GIF\n"
+                    "• `-hug @user` – Wholesome hug GIF\n"
+                    "• `-kiss @user` – Sweet kiss GIF\n"
+                    "• `-ship @user` – Compatibility match image 💖\n\n"
+                    "🎭 **Extra Permissions**\n"
+                    "• Create private/public threads\n"
+                    "• Send voice messages\n"
+                    "• Create polls\n"
+                    "• Use activities in voice channels\n"
+                    "• Use soundboard & external sounds\n\n"
+                    "✨ **Enjoy your premium experience and have fun!**"
+                ),
+                color=discord.Color.gold(),
+                timestamp=datetime.now(timezone.utc),
+            )
+            premium_embed.set_thumbnail(url=after.guild.icon.url if after.guild.icon else after.display_avatar.url)
+            premium_embed.set_footer(text="DungeonKeeper Premium Team • We're glad you're here! 💎")
+            await after.send(embed=premium_embed)
+            await log(after.guild, "auto_dm", "System", str(after), "Premium purchase DM sent")
+        except discord.Forbidden:
+            await log(after.guild, "auto_dm_fail", "System", str(after), "DMs disabled – Premium purchase")
+
+    if PREMIUM_ROLE_ID in (before_roles - after_roles):
+        try:
+            expiry_embed = discord.Embed(
+                title="⚠️ Your Premium Subscription Has Ended",
+                description=(
+                    "Your perks and premium role have been removed.\n\n"
+                    "We hope you enjoyed your experience 💙\n"
+                    "You can always rejoin Premium anytime!"
+                ),
+                color=discord.Color.from_str("#ED4245"),
+                timestamp=datetime.now(timezone.utc),
+            )
+            expiry_embed.set_footer(text="DungeonKeeper Premium Team • See you soon!")
+            await after.send(embed=expiry_embed)
+            await log(after.guild, "auto_dm", "System", str(after), "Premium expiry DM sent")
+        except discord.Forbidden:
+            await log(after.guild, "auto_dm_fail", "System", str(after), "DMs disabled – Premium expiry")
 
 def _support_embed() -> discord.Embed:
     e = discord.Embed(
@@ -707,6 +798,120 @@ def staff_only():
         await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
         return False
     return app_commands.check(predicate)
+
+def premium_only_cmd():
+    async def predicate(ctx: commands.Context) -> bool:
+        if not ctx.guild: return False
+        if ctx.author.guild_permissions.administrator: return True
+        if is_staff(ctx.author): return True
+        if any(r.id == PREMIUM_ROLE_ID for r in ctx.author.roles):
+            return True
+        await ctx.send("This is a **Premium** command. Upgrade to unlock!", delete_after=5)
+        return False
+    return commands.check(predicate)
+
+async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name: str, verb: str):
+    await ctx.message.delete()
+    if target.id == ctx.author.id:
+        return await ctx.send(f"You can't {action_name} yourself!", delete_after=5)
+    
+    gif_url = random.choice(GIFS.get(action_name, []))
+    embed = discord.Embed(
+        description=f"**{ctx.author.display_name}** {verb} **{target.display_name}**",
+        color=discord.Color.random()
+    )
+    embed.set_image(url=gif_url)
+    await ctx.send(content=f"{target.mention}", embed=embed)
+
+@bot.command(name="kick")
+@premium_only_cmd()
+async def kick_cmd(ctx: commands.Context, target: discord.Member):
+    await _action_cmd(ctx, target, "kick", "kicked")
+
+@bot.command(name="slap")
+@premium_only_cmd()
+async def slap_cmd(ctx: commands.Context, target: discord.Member):
+    await _action_cmd(ctx, target, "slap", "slapped")
+
+@bot.command(name="hug")
+@premium_only_cmd()
+async def hug_cmd(ctx: commands.Context, target: discord.Member):
+    await _action_cmd(ctx, target, "hug", "hugged")
+
+@bot.command(name="kiss")
+@premium_only_cmd()
+async def kiss_cmd(ctx: commands.Context, target: discord.Member):
+    await _action_cmd(ctx, target, "kiss", "kissed")
+
+async def create_ship_image(user1: discord.Member, user2: discord.Member, percentage: int) -> io.BytesIO:
+    async with aiohttp.ClientSession() as session:
+        async with session.get(user1.display_avatar.with_format("png").url) as r1, \
+                   session.get(user2.display_avatar.with_format("png").url) as r2:
+            img1 = Image.open(io.BytesIO(await r1.read())).convert("RGBA").resize((200, 200))
+            img2 = Image.open(io.BytesIO(await r2.read())).convert("RGBA").resize((200, 200))
+
+    canvas_w, canvas_h = 1000, 320
+    base = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(base)
+
+    # Simple gradient background
+    for x in range(canvas_w):
+        r = int(72 + (x / canvas_w) * 60)
+        g = int(149 + (x / canvas_w) * 80)
+        b = int(239 - (x / canvas_w) * 50)
+        draw.line([(x, 0), (x, canvas_h)], fill=(r, g, b, 255))
+
+    # Mask for circular avatars
+    mask = Image.new("L", (200, 200), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, 200, 200), fill=255)
+
+    base.paste(img1, (100, 60), mask)
+    base.paste(img2, (700, 60), mask)
+
+    # Draw heart
+    heart_center = (500, 160)
+    heart_size = 120
+    draw.polygon([
+        (500, 250), (430, 180), (430, 130), (465, 100), (500, 135),
+        (535, 100), (570, 130), (570, 180)
+    ], fill=(255, 105, 180, 255)) # Hot Pink
+
+    # Draw percentage text
+    try:
+        font = ImageFont.truetype("arial.ttf", 40)
+    except:
+        font = ImageFont.load_default()
+    
+    text = f"{percentage}%"
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    draw.text((heart_center[0] - tw/2, heart_center[1] - th/2), text, fill="white", font=font)
+
+    buf = io.BytesIO()
+    base.save(buf, format="PNG")
+    buf.seek(0)
+    return buf
+
+@bot.command(name="ship")
+@premium_only_cmd()
+async def ship_cmd(ctx: commands.Context, target: discord.Member):
+    await ctx.message.delete()
+    percentage = random.randint(0, 100)
+    
+    async with ctx.typing():
+        try:
+            image_buf = await create_ship_image(ctx.author, target, percentage)
+            file = discord.File(fp=image_buf, filename="ship.png")
+            
+            embed = discord.Embed(
+                title="💞 Compatibility Match",
+                description=f"**{ctx.author.display_name}** and **{target.display_name}** are a **{percentage}%** match!",
+                color=discord.Color.from_str("#FF69B4")
+            )
+            embed.set_image(url="attachment://ship.png")
+            await ctx.send(file=file, embed=embed)
+        except Exception:
+            await ctx.send(f"💞 **{ctx.author.display_name}** x **{target.display_name}**: **{percentage}%**!")
 
 @bot.tree.command(name="dm", description="Send a DM to a user.")
 @app_commands.describe(user="The user to DM", message="The message to send", embed="Send as an embed? (default: True)")

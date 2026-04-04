@@ -16,6 +16,7 @@ All bot logic lives in a single file: `main.py`.
 - [ModMail System](#modmail-system)
 - [Staff Buttons](#staff-buttons)
 - [Automatic Behaviours](#automatic-behaviours)
+- [Premium Membership System](#premium-membership-system)
 - [Log System](#log-system)
 - [Data Storage](#data-storage)
 - [Channel & Role IDs](#channel--role-ids)
@@ -28,11 +29,11 @@ All bot logic lives in a single file: `main.py`.
 
 **Requirements**
 - Python 3.12+
-- pip packages: `discord.py`, `python-dotenv`
+- pip packages: `discord.py==2.3.2`, `python-dotenv==1.0.1`, `Pillow`, `aiohttp`
 
 **Install dependencies**
 ```bash
-pip install discord.py python-dotenv
+pip install discord.py python-dotenv Pillow aiohttp
 ```
 
 **Run the bot**
@@ -240,6 +241,43 @@ When a member is **given** the Precious Member role, the bot automatically:
 2. Logs the auto DM in the log channel.
 
 > In all cases, if the member has DMs disabled the bot logs a warning instead.
+
+---
+
+## Premium Membership System
+
+The bot includes a robust **Premium Membership** system with automated onboarding, expiry handling, and exclusive interaction commands.
+
+### 1. Purchase Confirmation (DM)
+
+When a user is assigned the **Premium** role (`1489595969782943804`), they receive a styled welcome DM:
+- 🎉 **Confirmation Message**: "Purchase Successful! Welcome to Premium!"
+- 👑 **Perks Listed**: Access to channels, priority support, customization options, and exclusive bot commands.
+
+### 2. Premium Interaction Commands
+
+These commands use the `-` prefix and are available only to **Premium members**, **Staff**, and **Admins**.
+
+| Command | Action | Special Behavior |
+|---------|--------|-----------------|
+| `-kick @user` | Posts a random high-quality kick GIF | Auto-deletes command message |
+| `-slap @user` | Posts a random high-quality slap GIF | Auto-deletes command message |
+| `-hug @user` | Posts a random high-quality hug GIF | Auto-deletes command message |
+| `-kiss @user` | Posts a random high-quality kiss GIF | Auto-deletes command message |
+| `-ship @user` | Generates a custom compatibility image | Dynamic Pillow image generation |
+
+### 3. Dynamic "Ship" Engine
+
+The `-ship` command uses the **Pillow** library to generate a 1000x320 image:
+- **Circular Avatars**: Fetches and masks avatars for both users.
+- **Premium Background**: Dynamic gradient backdrop.
+- **Random Match**: Calculates a random 0–100% compatibility value shown inside a heart.
+
+### 4. Subscription Expiry
+
+When the Premium role is **removed**, the bot automatically:
+1. Clears all premium access privileges.
+2. Sends a **⚠️ Subscription Ended** DM to the user with a thank you message and re-join link.
 
 ---
 
