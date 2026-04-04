@@ -79,4 +79,4 @@ The following IDs must be updated in `main.py`:
 
 ## 📜 Credits & License
 Developed for **DungeonKeeper**. Assets provided by **Klipy**.
-Documentation and Premium System by **Antigravity AI**.
+
