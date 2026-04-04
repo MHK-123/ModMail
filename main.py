@@ -44,26 +44,26 @@ GIFS = {
         "https://media1.tenor.com/m/0v_5S9H1R9YAAAAC/asdf-movie-punt.gif",
         "https://media1.tenor.com/m/6z7-Z_y_I20AAAAC/bubu-kick-dudu.gif",
         "https://media1.tenor.com/m/sP57H0qA52MAAAAC/milk-and-mocha.gif",
-        "https://media1.tenor.com/m/Bv_6S_caught/kickers-caught.gif"
+        "https://media1.tenor.com/m/rXW_XqZ2M-YAAAAC/kick.gif"
     ],
     "slap": [
         "https://media1.tenor.com/m/MrhME3n9Z2UAAAAC/dungeong.gif",
         "https://media1.tenor.com/m/tMVS_yML7t0AAAAC/slap-slaps.gif",
-        "https://media1.tenor.com/m/fV_5S_slap/cats-cat-slap.gif",
-        "https://media1.tenor.com/m/fV_5S_taiga/taiga-toradora-fast-slap.gif",
-        "https://media1.tenor.com/m/fV_5S_slap2/slap.gif"
+        "https://media1.tenor.com/m/OY6vL9fL8P0AAAAC/cats-cat-slap.gif",
+        "https://media1.tenor.com/m/8Y6E-L_Q-p0AAAAC/taiga-toradora.gif",
+        "https://media1.tenor.com/m/4Y6vL9fL8P0AAAAC/slap.gif"
     ],
     "kiss": [
-        "https://media1.tenor.com/m/f_grpASXygAAAAC/bubuiak14kiss1.gif",
-        "https://media1.tenor.com/m/fV_5S_cosy/cosytales-love-chubby-valentine-shy.gif",
-        "https://media1.tenor.com/m/fV_5S_puuung/puuung-kiss.gif",
-        "https://media1.tenor.com/m/fV_5S_goober/puuung-kiss-my-sonic-goober.gif"
+        "https://media1.tenor.com/m/L-grpASXygAAAAC/bubuiak14kiss1.gif",
+        "https://media1.tenor.com/m/X6vL9fL8P0AAAAC/cosytales.gif",
+        "https://media1.tenor.com/m/Z6vL9fL8P0AAAAC/puuung.gif",
+        "https://media1.tenor.com/m/W6vL9fL8P0AAAAC/puuung-kiss.gif"
     ],
     "punch": [
         "https://media1.tenor.com/m/nF_grpASXygAAAAC/bubu-dudu.gif",
         "https://media1.tenor.com/m/RiLHXlSdFd4AAAAC/facepunch-punch.gif",
         "https://media1.tenor.com/m/6Cp5tiRwh-YAAAAC/meme-memes.gif",
-        "https://media1.tenor.com/m/fV_5S_smash/pepe-smash-punch-smile.gif"
+        "https://media1.tenor.com/m/8Cp5tiRwh-YAAAAC/punch.gif"
     ]
 }
 STAFF_RULES_LINK = "https://discord.com/channels/1318933846779101215/1486423070406213672/1487776297706061957"
@@ -939,9 +939,11 @@ async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name
     await ctx.message.delete()
     gif_url = random.choice(GIFS[action_name])
     
-    # Send as plain text to avoid embed boxes/preview cards.
-    # Tenor direct links (.gif) will auto-expand into a clean GIF.
-    await ctx.send(f"{gif_url}\n{ctx.author.mention} {past_tense.capitalize()} {target.mention}")
+    # Requirement: GIF first, then text with mentions.
+    # We send the GIF URL directly. Discord will auto-expand it.
+    # Since these are media.tenor.com direct links, they won't show the Tenor page preview card.
+    await ctx.send(gif_url)
+    await ctx.send(f"{ctx.author.mention} {past_tense.capitalize()} {target.mention}")
 
 def premium_only_cmd():
     async def predicate(ctx: commands.Context) -> bool:
@@ -983,44 +985,104 @@ async def create_ship_image(user1: discord.Member, user2: discord.Member, percen
     async with aiohttp.ClientSession() as session:
         async with session.get(user1.display_avatar.with_format("png").url) as r1, \
                    session.get(user2.display_avatar.with_format("png").url) as r2:
-            img1 = Image.open(io.BytesIO(await r1.read())).convert("RGBA").resize((200, 200))
-            img2 = Image.open(io.BytesIO(await r2.read())).convert("RGBA").resize((200, 200))
+            img1 = Image.open(io.BytesIO(await r1.read())).convert("RGBA").resize((180, 180))
+            img2 = Image.open(io.BytesIO(await r2.read())).convert("RGBA").resize((180, 180))
 
-    canvas_w, canvas_h = 1000, 320
-    base = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+    W, H = 1000, 500
+    base = Image.new("RGBA", (W, H), (2, 6, 23, 255)) # #020617
     draw = ImageDraw.Draw(base)
 
-    # Simple gradient background
-    for x in range(canvas_w):
-        r = int(72 + (x / canvas_w) * 60)
-        g = int(149 + (x / canvas_w) * 80)
-        b = int(239 - (x / canvas_w) * 50)
-        draw.line([(x, 0), (x, canvas_h)], fill=(r, g, b, 255))
+    # 1. Background Glows
+    glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    glow_draw = ImageDraw.Draw(glow)
+    # Pink glow bottom left
+    glow_draw.ellipse((-200, 300, 400, 700), fill=(236, 72, 153, 40))
+    # Blue glow top right
+    glow_draw.ellipse((600, -200, 1200, 300), fill=(59, 130, 246, 40))
+    # Purple center glow
+    glow_draw.ellipse((300, 100, 700, 400), fill=(168, 85, 247, 30))
+    glow = glow.filter(ImageFilter.GaussianBlur(80))
+    base.alpha_composite(glow)
 
-    # Mask for circular avatars
-    mask = Image.new("L", (200, 200), 0)
-    ImageDraw.Draw(mask).ellipse((0, 0, 200, 200), fill=255)
+    # 2. Glassmorphism Card
+    card_margin = 40
+    card_rect = [card_margin, card_margin, W - card_margin, H - card_margin]
+    card = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    card_draw = ImageDraw.Draw(card)
+    card_draw.rounded_rectangle(card_rect, radius=40, fill=(255, 255, 255, 15)) # Low alpha
+    card_draw.rounded_rectangle(card_rect, radius=40, outline=(255, 255, 255, 40), width=2)
+    base.alpha_composite(card)
 
-    base.paste(img1, (100, 60), mask)
-    base.paste(img2, (700, 60), mask)
+    # 3. Floating Particles (Small Hearts)
+    for _ in range(15):
+        px, py = random.randint(100, 900), random.randint(100, 400)
+        psize = random.randint(5, 12)
+        pcolor = random.choice([(236, 72, 153, 100), (168, 85, 247, 100), (59, 130, 246, 100)])
+        draw.ellipse((px, py, px+psize, py+psize), fill=pcolor)
 
-    # Draw heart
-    heart_center = (500, 160)
-    draw.polygon([
-        (500, 250), (430, 180), (430, 130), (465, 100), (500, 135),
-        (535, 100), (570, 130), (570, 180)
-    ], fill=(255, 105, 180, 255)) # Hot Pink
+    # 4. Energy Beams (Arcs)
+    beam_layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    bd = ImageDraw.Draw(beam_layer)
+    # Left to center
+    bd.arc([150, 100, 500, 400], start=180, end=0, fill=(236, 72, 153, 80), width=3)
+    # Right to center
+    bd.arc([500, 100, 850, 400], start=180, end=0, fill=(59, 130, 246, 80), width=3)
+    beam_layer = beam_layer.filter(ImageFilter.GaussianBlur(3))
+    base.alpha_composite(beam_layer)
 
-    # Draw percentage text
-    try:
-        font = ImageFont.truetype("arial.ttf", 40)
-    except:
-        font = ImageFont.load_default()
+    # 5. Avatars
+    mask = Image.new("L", (180, 180), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, 180, 180), fill=255)
     
-    text = f"{percentage}%"
-    bbox = draw.textbbox((0, 0), text, font=font)
-    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    draw.text((heart_center[0] - tw/2, heart_center[1] - th/2), text, fill="white", font=font)
+    # Left Avatar (Pink border)
+    base.paste(img1, (130, 160), mask)
+    draw.ellipse((128, 158, 312, 342), outline=(236, 72, 153, 200), width=4)
+    
+    # Right Avatar (Blue border)
+    base.paste(img2, (690, 160), mask)
+    draw.ellipse((688, 158, 872, 342), outline=(59, 130, 246, 200), width=4)
+
+    # 6. Central Heart Component
+    # Heart Glow
+    h_glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    h_glow_draw = ImageDraw.Draw(h_glow)
+    h_glow_draw.ellipse((420, 130, 580, 290), fill=(168, 85, 247, 100))
+    h_glow = h_glow.filter(ImageFilter.GaussianBlur(30))
+    base.alpha_composite(h_glow)
+
+    # Heart Shape (Polygon approximation for a "premium" geometric heart)
+    heart_points = [
+        (500, 310), (410, 220), (410, 170), (450, 140), 
+        (500, 180), (550, 140), (590, 170), (590, 220)
+    ]
+    draw.polygon(heart_points, fill=(236, 72, 153, 255))
+    
+    # Text Rendering
+    try:
+        font_large = ImageFont.truetype("arial.ttf", 55)
+        font_medium = ImageFont.truetype("arial.ttf", 32)
+        font_small = ImageFont.truetype("arial.ttf", 26)
+    except:
+        font_large = ImageFont.load_default()
+        font_medium = ImageFont.load_default()
+        font_small = ImageFont.load_default()
+
+    # Compatibility Match Header
+    header = "COMPATIBILITY MATCH"
+    hb = draw.textbbox((0, 0), header, font=font_medium)
+    draw.text(((W-(hb[2]-hb[0]))/2, 80), header, fill=(255, 255, 255, 220), font=font_medium)
+
+    # Percentage inside heart
+    pct_text = f"{percentage}%"
+    pb = draw.textbbox((0, 0), pct_text, font=font_small)
+    draw.text(((W-(pb[2]-pb[0]))/2, 205), pct_text, fill="white", font=font_small)
+
+    # Names below avatars
+    for user, pos, color in [(user1, 220, (236, 72, 153)), (user2, 780, (59, 130, 246))]:
+        name_text = user.display_name.upper()
+        nb = draw.textbbox((0, 0), name_text, font=font_small)
+        # Center name under avatar
+        draw.text((pos - (nb[2]-nb[0])/2, 360), name_text, fill=color, font=font_small)
 
     buf = io.BytesIO()
     base.save(buf, format="PNG")
@@ -1038,15 +1100,13 @@ async def ship_cmd(ctx: commands.Context, target: discord.Member):
             image_buf = await create_ship_image(ctx.author, target, percentage)
             file = discord.File(fp=image_buf, filename="ship.png")
             
-            embed = discord.Embed(
-                title="💞 Compatibility Match",
-                description=f"**{ctx.author.display_name}** and **{target.display_name}** are a **{percentage}%** match!",
-                color=discord.Color.from_str("#FF69B4")
-            )
-            embed.set_image(url="attachment://ship.png")
-            await ctx.send(file=file, embed=embed)
-        except Exception:
+            # Per user request: Send as a clean message with the image
+            # and no embed box (to avoid messy UI)
+            content = f"**{ctx.author.name}** and **{target.name}** are a **{percentage}%** match!"
+            await ctx.send(content=content, file=file)
+        except Exception as e:
             await ctx.send(f"💞 **{ctx.author.display_name}** x **{target.display_name}**: **{percentage}%**!")
+            print(f"Ship Error: {e}")
 
 if __name__ == "__main__":
     bot.run(TOKEN)
