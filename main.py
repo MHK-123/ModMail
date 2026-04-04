@@ -940,8 +940,10 @@ async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name
     await ctx.message.delete()
     gif_url = random.choice(GIFS[action_name])
     
-    # Send the raw GIF URL first. Discord will automatically embed it as a clean GIF.
-    await ctx.send(gif_url)
+    # Send the GIF as a clean embed (no content, no blue link)
+    embed = discord.Embed()
+    embed.set_image(url=gif_url)
+    await ctx.send(embed=embed)
         
     # Send the action text separately
     await ctx.send(f"{ctx.author.mention} {past_tense.capitalize()} {target.mention}")
