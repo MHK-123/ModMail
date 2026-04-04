@@ -546,21 +546,21 @@ async def on_member_update(before: discord.Member, after: discord.Member):
                 title="🎉 Purchase Successful! Welcome to Premium!",
                 description=(
                     "Here’s everything you unlock:\n\n"
-                    "👑 **Exclusive Access**\n"
+                    " **Exclusive Access**\n"
                     "• Access to premium-only channels\n"
                     "• Priority support & faster responses\n"
                     "• Early access to new features\n\n"
-                    "🎨 **Customization**\n"
+                    " **Customization**\n"
                     "• Custom role (DM admin to set name/color/icon)\n"
                     "• Use external emojis & stickers\n"
                     "• Send embeds, links, and media freely\n\n"
-                    "🤖 **Premium Bot Commands**\n"
+                    " **Premium Bot Commands**\n"
                     "• `-kick @user` – Fun kick GIF interaction\n"
                     "• `-slap @user` – Random slap GIF\n"
                     "• `-hug @user` – Wholesome hug GIF\n"
                     "• `-kiss @user` – Sweet kiss GIF\n"
                     "• `-ship @user` – Compatibility match image 💖\n\n"
-                    "🎭 **Extra Permissions**\n"
+                    " **Extra Permissions**\n"
                     "• Create private/public threads\n"
                     "• Send voice messages\n"
                     "• Create polls\n"
@@ -572,7 +572,6 @@ async def on_member_update(before: discord.Member, after: discord.Member):
                 timestamp=datetime.now(timezone.utc),
             )
             premium_embed.set_thumbnail(url=after.guild.icon.url if after.guild.icon else after.display_avatar.url)
-            premium_embed.set_footer(text="DungeonKeeper Premium Team • We're glad you're here! 💎")
             await after.send(embed=premium_embed)
             await log(after.guild, "auto_dm", "System", str(after), "Premium purchase DM sent")
         except discord.Forbidden:
@@ -590,7 +589,6 @@ async def on_member_update(before: discord.Member, after: discord.Member):
                 color=discord.Color.from_str("#ED4245"),
                 timestamp=datetime.now(timezone.utc),
             )
-            expiry_embed.set_footer(text="DungeonKeeper Premium Team • See you soon!")
             await after.send(embed=expiry_embed)
             await log(after.guild, "auto_dm", "System", str(after), "Premium expiry DM sent")
         except discord.Forbidden:
