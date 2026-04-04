@@ -953,9 +953,8 @@ async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name
         print(f"Error fetching GIF: {e}")
         await ctx.send(gif_url, suppress_embeds=True)
         
-    # Send the action text separately without triggering user pings
-    allowed_mentions = discord.AllowedMentions(users=False)
-    await ctx.send(f"{ctx.author.mention} {past_tense.capitalize()} {target.mention}", allowed_mentions=allowed_mentions)
+    # Send the action text separately
+    await ctx.send(f"{ctx.author.mention} {past_tense.capitalize()} {target.mention}")
 
 def premium_only_cmd():
     async def predicate(ctx: commands.Context) -> bool:
