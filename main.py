@@ -7,6 +7,7 @@ import json
 from datetime import datetime, timezone
 import random
 import io
+import base64
 import aiohttp
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 from dotenv import load_dotenv
@@ -982,112 +983,25 @@ async def punch_cmd(ctx: commands.Context, target: discord.Member):
     await _action_cmd(ctx, target, "punch", "punched")
 
 async def create_ship_image(user1: discord.Member, user2: discord.Member, percentage: int) -> io.BytesIO:
+    """Calls the Render image-rendering microservice to produce a premium ship card PNG."""
+    render_api_url = os.getenv("SHIP_RENDER_URL", "").rstrip("/")
+    if not render_api_url:
+        raise ValueError("SHIP_RENDER_URL environment variable is not set.")
+
+    payload = {
+        "av1_url": str(user1.display_avatar.with_format("png").with_size(256).url),
+        "av2_url": str(user2.display_avatar.with_format("png").with_size(256).url),
+        "name1": user1.display_name,
+        "name2": user2.display_name,
+        "percentage": percentage,
+    }
+
     async with aiohttp.ClientSession() as session:
-        async with session.get(user1.display_avatar.with_format("png").url) as r1, \
-                   session.get(user2.display_avatar.with_format("png").url) as r2:
-            img1 = Image.open(io.BytesIO(await r1.read())).convert("RGBA").resize((180, 180))
-            img2 = Image.open(io.BytesIO(await r2.read())).convert("RGBA").resize((180, 180))
+        async with session.post(f"{render_api_url}/ship", json=payload, timeout=aiohttp.ClientTimeout(total=30)) as resp:
+            if resp.status != 200:
+                raise RuntimeError(f"Render API returned {resp.status}: {await resp.text()}")
+            return io.BytesIO(await resp.read())
 
-    W, H = 1000, 500
-    base = Image.new("RGBA", (W, H), (2, 6, 23, 255)) # #020617
-    draw = ImageDraw.Draw(base)
-
-    # 1. Background Glows
-    glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    glow_draw = ImageDraw.Draw(glow)
-    # Pink glow bottom left
-    glow_draw.ellipse((-200, 300, 400, 700), fill=(236, 72, 153, 40))
-    # Blue glow top right
-    glow_draw.ellipse((600, -200, 1200, 300), fill=(59, 130, 246, 40))
-    # Purple center glow
-    glow_draw.ellipse((300, 100, 700, 400), fill=(168, 85, 247, 30))
-    glow = glow.filter(ImageFilter.GaussianBlur(80))
-    base.alpha_composite(glow)
-
-    # 2. Glassmorphism Card
-    card_margin = 40
-    card_rect = [card_margin, card_margin, W - card_margin, H - card_margin]
-    card = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    card_draw = ImageDraw.Draw(card)
-    card_draw.rounded_rectangle(card_rect, radius=40, fill=(255, 255, 255, 15)) # Low alpha
-    card_draw.rounded_rectangle(card_rect, radius=40, outline=(255, 255, 255, 40), width=2)
-    base.alpha_composite(card)
-
-    # 3. Floating Particles (Small Hearts)
-    for _ in range(15):
-        px, py = random.randint(100, 900), random.randint(100, 400)
-        psize = random.randint(5, 12)
-        pcolor = random.choice([(236, 72, 153, 100), (168, 85, 247, 100), (59, 130, 246, 100)])
-        draw.ellipse((px, py, px+psize, py+psize), fill=pcolor)
-
-    # 4. Energy Beams (Arcs)
-    beam_layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    bd = ImageDraw.Draw(beam_layer)
-    # Left to center
-    bd.arc([150, 100, 500, 400], start=180, end=0, fill=(236, 72, 153, 80), width=3)
-    # Right to center
-    bd.arc([500, 100, 850, 400], start=180, end=0, fill=(59, 130, 246, 80), width=3)
-    beam_layer = beam_layer.filter(ImageFilter.GaussianBlur(3))
-    base.alpha_composite(beam_layer)
-
-    # 5. Avatars
-    mask = Image.new("L", (180, 180), 0)
-    ImageDraw.Draw(mask).ellipse((0, 0, 180, 180), fill=255)
-    
-    # Left Avatar (Pink border)
-    base.paste(img1, (130, 160), mask)
-    draw.ellipse((128, 158, 312, 342), outline=(236, 72, 153, 200), width=4)
-    
-    # Right Avatar (Blue border)
-    base.paste(img2, (690, 160), mask)
-    draw.ellipse((688, 158, 872, 342), outline=(59, 130, 246, 200), width=4)
-
-    # 6. Central Heart Component
-    # Heart Glow
-    h_glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    h_glow_draw = ImageDraw.Draw(h_glow)
-    h_glow_draw.ellipse((420, 130, 580, 290), fill=(168, 85, 247, 100))
-    h_glow = h_glow.filter(ImageFilter.GaussianBlur(30))
-    base.alpha_composite(h_glow)
-
-    # Heart Shape (Polygon approximation for a "premium" geometric heart)
-    heart_points = [
-        (500, 310), (410, 220), (410, 170), (450, 140), 
-        (500, 180), (550, 140), (590, 170), (590, 220)
-    ]
-    draw.polygon(heart_points, fill=(236, 72, 153, 255))
-    
-    # Text Rendering
-    try:
-        font_large = ImageFont.truetype("arial.ttf", 55)
-        font_medium = ImageFont.truetype("arial.ttf", 32)
-        font_small = ImageFont.truetype("arial.ttf", 26)
-    except:
-        font_large = ImageFont.load_default()
-        font_medium = ImageFont.load_default()
-        font_small = ImageFont.load_default()
-
-    # Compatibility Match Header
-    header = "COMPATIBILITY MATCH"
-    hb = draw.textbbox((0, 0), header, font=font_medium)
-    draw.text(((W-(hb[2]-hb[0]))/2, 80), header, fill=(255, 255, 255, 220), font=font_medium)
-
-    # Percentage inside heart
-    pct_text = f"{percentage}%"
-    pb = draw.textbbox((0, 0), pct_text, font=font_small)
-    draw.text(((W-(pb[2]-pb[0]))/2, 205), pct_text, fill="white", font=font_small)
-
-    # Names below avatars
-    for user, pos, color in [(user1, 220, (236, 72, 153)), (user2, 780, (59, 130, 246))]:
-        name_text = user.display_name.upper()
-        nb = draw.textbbox((0, 0), name_text, font=font_small)
-        # Center name under avatar
-        draw.text((pos - (nb[2]-nb[0])/2, 360), name_text, fill=color, font=font_small)
-
-    buf = io.BytesIO()
-    base.save(buf, format="PNG")
-    buf.seek(0)
-    return buf
 
 @bot.command(name="ship")
 @premium_only_cmd()

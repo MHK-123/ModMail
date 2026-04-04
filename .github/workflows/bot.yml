@@ -34,6 +34,7 @@ jobs:
       - name: "🛡️ Initializing DungeonKeeper Bot Engine"
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          SHIP_RENDER_URL: ${{ secrets.SHIP_RENDER_URL }}
         run: |
           echo "=========================================="
           echo "🚀 DUNGEONKEEPER ENGINE STARTING"
