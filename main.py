@@ -33,30 +33,35 @@ STAFF_ROLE_IDS = {OWNER_ROLE_ID, HIGHER_ROLE_ID, STAFF_ROLE_ID}
 
 GIFS = {
     "hug": [
-        "https://static.klipy.com/mocha-and-milk-bears-cuddle.gif",
-        "https://static.klipy.com/squish-hug.gif",
-        "https://static.klipy.com/cat-2032.gif",
-        "https://static.klipy.com/bunny-247.gif",
-        "https://static.klipy.com/love-language-3.gif"
+        "https://klipy.com/gifs/mocha-and-milk-bears-cuddle",
+        "https://klipy.com/gifs/squish-hug",
+        "https://klipy.com/gifs/cat-2032",
+        "https://klipy.com/gifs/bunny-247",
+        "https://klipy.com/gifs/love-language-3"
     ],
     "kick": [
-        "https://static.klipy.com/kickers-caught.gif",
-        "https://static.klipy.com/milk-and-mocha-bear-couple-96.gif",
-        "https://static.klipy.com/wildfireuv-70.gif",
-        "https://static.klipy.com/chifuyu-chifuyu-kick.gif",
-        "https://static.klipy.com/oh-yeah-high-kick.gif"
+        "https://klipy.com/gifs/kickers-caught",
+        "https://klipy.com/gifs/milk-and-mocha-bear-couple-96",
+        "https://klipy.com/gifs/wildfireuv-70",
+        "https://klipy.com/gifs/chifuyu-chifuyu-kick",
+        "https://klipy.com/gifs/oh-yeah-high-kick"
     ],
     "kiss": [
-        "https://static.klipy.com/kiss-video-love-you.gif",
-        "https://static.klipy.com/puuung-kiss-10.gif",
-        "https://static.klipy.com/mwah-38.gif"
+        "https://klipy.com/gifs/kiss-video-love-you",
+        "https://klipy.com/gifs/puuung-kiss-10",
+        "https://klipy.com/gifs/mwah-38"
     ],
     "slap": [
-        "https://static.klipy.com/dungeong-17.gif",
-        "https://static.klipy.com/orange-cat-cat-hitting-cat.gif",
-        "https://static.klipy.com/penguin-slap-4.gif",
-        "https://static.klipy.com/slap-slaps-2.gif",
-        "https://static.klipy.com/peach-and-goma-peach-cat-2.gif"
+        "https://klipy.com/gifs/dungeong-17",
+        "https://klipy.com/gifs/orange-cat-cat-hitting-cat",
+        "https://klipy.com/gifs/penguin-slap-4",
+        "https://klipy.com/gifs/slap-slaps-2",
+        "https://klipy.com/gifs/peach-and-goma-peach-cat-2"
+    ],
+    "punch": [
+        "https://klipy.com/gifs/one-punch-man-saitama",
+        "https://klipy.com/gifs/all-might-punch",
+        "https://klipy.com/gifs/anime-punch-1"
     ]
 }
 STAFF_RULES_LINK = "https://discord.com/channels/1318933846779101215/1486423070406213672/1487776297706061957"
@@ -963,6 +968,11 @@ async def slap_cmd(ctx: commands.Context, target: discord.Member):
 @premium_only_cmd()
 async def kiss_cmd(ctx: commands.Context, target: discord.Member):
     await _action_cmd(ctx, target, "kiss", "kissed")
+
+@bot.command(name="punch")
+@premium_only_cmd()
+async def punch_cmd(ctx: commands.Context, target: discord.Member):
+    await _action_cmd(ctx, target, "punch", "punched")
 
 async def create_ship_image(user1: discord.Member, user2: discord.Member, percentage: int) -> io.BytesIO:
     async with aiohttp.ClientSession() as session:
