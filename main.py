@@ -379,6 +379,7 @@ async def on_ready():
 
 @bot.event
 async def on_member_update(before: discord.Member, after: discord.Member):
+    print(f"Debug: Member update for {after.display_name} - Roles: {[r.id for r in after.roles]}")
     before_roles = set(r.id for r in before.roles)
     after_roles  = set(r.id for r in after.roles)
 
@@ -567,7 +568,7 @@ async def on_member_update(before: discord.Member, after: discord.Member):
                     "• Use soundboard & external sounds\n\n"
                     "✨ **Enjoy your premium experience and have fun!**"
                 ),
-                color=discord.Color.gold(),
+                color=discord.Color.blurple(),
                 timestamp=datetime.now(timezone.utc),
             )
             premium_embed.set_thumbnail(url=after.guild.icon.url if after.guild.icon else after.display_avatar.url)
@@ -779,6 +780,7 @@ async def handle_thread(message: discord.Message):
 async def on_message(message: discord.Message):
     if message.author.bot:
         return
+    print(f"Debug: Received message from {message.author}: {message.content}")
 
     # DM flow
     if message.guild is None:
@@ -942,6 +944,7 @@ def premium_only_cmd():
     async def predicate(ctx: commands.Context) -> bool:
         if not ctx.guild: return False
         is_premium = any(r.id == PREMIUM_ROLE_ID for r in ctx.author.roles)
+        print(f"Debug: Command check for {ctx.author.display_name} - IsPremium: {is_premium}")
         if is_premium or is_staff(ctx.author) or ctx.author.guild_permissions.administrator:
             return True
         await ctx.send("This command is exclusive to **Premium members**! 💎", delete_after=5)
