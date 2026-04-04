@@ -940,25 +940,29 @@ async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name
     await ctx.message.delete()
     gif_url = random.choice(GIFS[action_name])
     
-    # BEST REAL SOLUTION: Send as a native Discord file
-    # This bypasses all Tenor preview/embed issues and looks 100% clean.
+    # FINAL STABILIZED SOLUTION: Send as a native Discord file with safeguards
     try:
-        async with aiohttp.ClientSession() as session:
+        # Added timeout to prevent bot hangs on slow Tenor responses
+        timeout = aiohttp.ClientTimeout(total=10)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
             headers = {"User-Agent": "Mozilla/5.0"}
             async with session.get(gif_url, headers=headers) as resp:
-                if resp.status == 200:
+                # Validate content type and status code
+                if resp.status == 200 and resp.content_type.startswith("image"):
                     data = io.BytesIO(await resp.read())
-                    data.seek(0) # IMPORTANT: Reset pointer to start or file will be empty
+                    data.seek(0)
                     file = discord.File(data, filename="action.gif")
                     await ctx.send(file=file)
                 else:
-                    # Fallback to clean embed if download fails
+                    # Log failure details for debugging
+                    print(f"GIF Fetch Failed: {resp.status}, Content-Type: {resp.content_type}, URL: {gif_url}")
+                    # Fallback to clean embed (prevents Tenor preview cards)
                     embed = discord.Embed(color=0x2b2d31)
                     embed.set_image(url=gif_url)
                     await ctx.send(embed=embed)
     except Exception as e:
-        print(f"GIF Download Error: {e}")
-        # Final fallback - clean embed (no URL text)
+        print(f"Action GIF Error: {e}")
+        # Final fallback - clean embed (NEVER send gif_url in content)
         embed = discord.Embed(color=0x2b2d31)
         embed.set_image(url=gif_url)
         await ctx.send(embed=embed)
