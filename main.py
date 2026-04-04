@@ -940,24 +940,30 @@ async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name
     await ctx.message.delete()
     gif_url = random.choice(GIFS[action_name])
     
-    # 1. BEST REAL SOLUTION: Send as a native Discord file
+    # BEST REAL SOLUTION: Send as a native Discord file
     # This bypasses all Tenor preview/embed issues and looks 100% clean.
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(gif_url) as resp:
+            headers = {"User-Agent": "Mozilla/5.0"}
+            async with session.get(gif_url, headers=headers) as resp:
                 if resp.status == 200:
                     data = io.BytesIO(await resp.read())
+                    data.seek(0) # IMPORTANT: Reset pointer to start or file will be empty
                     file = discord.File(data, filename="action.gif")
                     await ctx.send(file=file)
                 else:
-                    # Fallback to direct URL if download fails
-                    await ctx.send(gif_url)
+                    # Fallback to clean embed if download fails
+                    embed = discord.Embed(color=0x2b2d31)
+                    embed.set_image(url=gif_url)
+                    await ctx.send(embed=embed)
     except Exception as e:
         print(f"GIF Download Error: {e}")
-        # Last resort fallback
-        await ctx.send(gif_url)
+        # Final fallback - clean embed (no URL text)
+        embed = discord.Embed(color=0x2b2d31)
+        embed.set_image(url=gif_url)
+        await ctx.send(embed=embed)
         
-    # 2. Send the mention/text message separately AFTER the GIF
+    # Send the mention/text message separately AFTER the GIF
     await ctx.send(content=f"{ctx.author.mention} {past_tense.capitalize()} {target.mention}")
 
 def premium_only_cmd():
