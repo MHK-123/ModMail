@@ -799,120 +799,6 @@ def staff_only():
         return False
     return app_commands.check(predicate)
 
-def premium_only_cmd():
-    async def predicate(ctx: commands.Context) -> bool:
-        if not ctx.guild: return False
-        if ctx.author.guild_permissions.administrator: return True
-        if is_staff(ctx.author): return True
-        if any(r.id == PREMIUM_ROLE_ID for r in ctx.author.roles):
-            return True
-        await ctx.send("This is a **Premium** command. Upgrade to unlock!", delete_after=5)
-        return False
-    return commands.check(predicate)
-
-async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name: str, verb: str):
-    await ctx.message.delete()
-    if target.id == ctx.author.id:
-        return await ctx.send(f"You can't {action_name} yourself!", delete_after=5)
-    
-    gif_url = random.choice(GIFS.get(action_name, []))
-    embed = discord.Embed(
-        description=f"**{ctx.author.display_name}** {verb} **{target.display_name}**",
-        color=discord.Color.random()
-    )
-    embed.set_image(url=gif_url)
-    await ctx.send(content=f"{target.mention}", embed=embed)
-
-@bot.command(name="kick")
-@premium_only_cmd()
-async def kick_cmd(ctx: commands.Context, target: discord.Member):
-    await _action_cmd(ctx, target, "kick", "kicked")
-
-@bot.command(name="slap")
-@premium_only_cmd()
-async def slap_cmd(ctx: commands.Context, target: discord.Member):
-    await _action_cmd(ctx, target, "slap", "slapped")
-
-@bot.command(name="hug")
-@premium_only_cmd()
-async def hug_cmd(ctx: commands.Context, target: discord.Member):
-    await _action_cmd(ctx, target, "hug", "hugged")
-
-@bot.command(name="kiss")
-@premium_only_cmd()
-async def kiss_cmd(ctx: commands.Context, target: discord.Member):
-    await _action_cmd(ctx, target, "kiss", "kissed")
-
-async def create_ship_image(user1: discord.Member, user2: discord.Member, percentage: int) -> io.BytesIO:
-    async with aiohttp.ClientSession() as session:
-        async with session.get(user1.display_avatar.with_format("png").url) as r1, \
-                   session.get(user2.display_avatar.with_format("png").url) as r2:
-            img1 = Image.open(io.BytesIO(await r1.read())).convert("RGBA").resize((200, 200))
-            img2 = Image.open(io.BytesIO(await r2.read())).convert("RGBA").resize((200, 200))
-
-    canvas_w, canvas_h = 1000, 320
-    base = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(base)
-
-    # Simple gradient background
-    for x in range(canvas_w):
-        r = int(72 + (x / canvas_w) * 60)
-        g = int(149 + (x / canvas_w) * 80)
-        b = int(239 - (x / canvas_w) * 50)
-        draw.line([(x, 0), (x, canvas_h)], fill=(r, g, b, 255))
-
-    # Mask for circular avatars
-    mask = Image.new("L", (200, 200), 0)
-    ImageDraw.Draw(mask).ellipse((0, 0, 200, 200), fill=255)
-
-    base.paste(img1, (100, 60), mask)
-    base.paste(img2, (700, 60), mask)
-
-    # Draw heart
-    heart_center = (500, 160)
-    heart_size = 120
-    draw.polygon([
-        (500, 250), (430, 180), (430, 130), (465, 100), (500, 135),
-        (535, 100), (570, 130), (570, 180)
-    ], fill=(255, 105, 180, 255)) # Hot Pink
-
-    # Draw percentage text
-    try:
-        font = ImageFont.truetype("arial.ttf", 40)
-    except:
-        font = ImageFont.load_default()
-    
-    text = f"{percentage}%"
-    bbox = draw.textbbox((0, 0), text, font=font)
-    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    draw.text((heart_center[0] - tw/2, heart_center[1] - th/2), text, fill="white", font=font)
-
-    buf = io.BytesIO()
-    base.save(buf, format="PNG")
-    buf.seek(0)
-    return buf
-
-@bot.command(name="ship")
-@premium_only_cmd()
-async def ship_cmd(ctx: commands.Context, target: discord.Member):
-    await ctx.message.delete()
-    percentage = random.randint(0, 100)
-    
-    async with ctx.typing():
-        try:
-            image_buf = await create_ship_image(ctx.author, target, percentage)
-            file = discord.File(fp=image_buf, filename="ship.png")
-            
-            embed = discord.Embed(
-                title="💞 Compatibility Match",
-                description=f"**{ctx.author.display_name}** and **{target.display_name}** are a **{percentage}%** match!",
-                color=discord.Color.from_str("#FF69B4")
-            )
-            embed.set_image(url="attachment://ship.png")
-            await ctx.send(file=file, embed=embed)
-        except Exception:
-            await ctx.send(f"💞 **{ctx.author.display_name}** x **{target.display_name}**: **{percentage}%**!")
-
 @bot.tree.command(name="dm", description="Send a DM to a user.")
 @app_commands.describe(user="The user to DM", message="The message to send", embed="Send as an embed? (default: True)")
 @staff_only()
@@ -1041,6 +927,115 @@ async def modmail_status(interaction: discord.Interaction):
     embed.add_field(name="Blacklisted Users", value=str(blacklisted_users), inline=True)
     
     await interaction.response.send_message(embed=embed, ephemeral=True)
+
+async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name: str, past_tense: str):
+    await ctx.message.delete()
+    gif_url = random.choice(GIFS[action_name])
+    embed = discord.Embed(
+        description=f"💖 **{ctx.author.display_name}** {past_tense} **{target.display_name}**!",
+        color=discord.Color.from_str("#5865F2")
+    )
+    embed.set_image(url=gif_url)
+    await ctx.send(content=target.mention, embed=embed)
+
+def premium_only_cmd():
+    async def predicate(ctx: commands.Context) -> bool:
+        if not ctx.guild: return False
+        is_premium = any(r.id == PREMIUM_ROLE_ID for r in ctx.author.roles)
+        if is_premium or is_staff(ctx.author) or ctx.author.guild_permissions.administrator:
+            return True
+        await ctx.send("This command is exclusive to **Premium members**! 💎", delete_after=5)
+        return False
+    return commands.check(predicate)
+
+@bot.command(name="hug")
+@premium_only_cmd()
+async def hug_cmd(ctx: commands.Context, target: discord.Member):
+    await _action_cmd(ctx, target, "hug", "hugged")
+
+@bot.command(name="kick")
+@premium_only_cmd()
+async def kick_cmd(ctx: commands.Context, target: discord.Member):
+    await _action_cmd(ctx, target, "kick", "kicked")
+
+@bot.command(name="slap")
+@premium_only_cmd()
+async def slap_cmd(ctx: commands.Context, target: discord.Member):
+    await _action_cmd(ctx, target, "slap", "slapped")
+
+@bot.command(name="kiss")
+@premium_only_cmd()
+async def kiss_cmd(ctx: commands.Context, target: discord.Member):
+    await _action_cmd(ctx, target, "kiss", "kissed")
+
+async def create_ship_image(user1: discord.Member, user2: discord.Member, percentage: int) -> io.BytesIO:
+    async with aiohttp.ClientSession() as session:
+        async with session.get(user1.display_avatar.with_format("png").url) as r1, \
+                   session.get(user2.display_avatar.with_format("png").url) as r2:
+            img1 = Image.open(io.BytesIO(await r1.read())).convert("RGBA").resize((200, 200))
+            img2 = Image.open(io.BytesIO(await r2.read())).convert("RGBA").resize((200, 200))
+
+    canvas_w, canvas_h = 1000, 320
+    base = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(base)
+
+    # Simple gradient background
+    for x in range(canvas_w):
+        r = int(72 + (x / canvas_w) * 60)
+        g = int(149 + (x / canvas_w) * 80)
+        b = int(239 - (x / canvas_w) * 50)
+        draw.line([(x, 0), (x, canvas_h)], fill=(r, g, b, 255))
+
+    # Mask for circular avatars
+    mask = Image.new("L", (200, 200), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, 200, 200), fill=255)
+
+    base.paste(img1, (100, 60), mask)
+    base.paste(img2, (700, 60), mask)
+
+    # Draw heart
+    heart_center = (500, 160)
+    draw.polygon([
+        (500, 250), (430, 180), (430, 130), (465, 100), (500, 135),
+        (535, 100), (570, 130), (570, 180)
+    ], fill=(255, 105, 180, 255)) # Hot Pink
+
+    # Draw percentage text
+    try:
+        font = ImageFont.truetype("arial.ttf", 40)
+    except:
+        font = ImageFont.load_default()
+    
+    text = f"{percentage}%"
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    draw.text((heart_center[0] - tw/2, heart_center[1] - th/2), text, fill="white", font=font)
+
+    buf = io.BytesIO()
+    base.save(buf, format="PNG")
+    buf.seek(0)
+    return buf
+
+@bot.command(name="ship")
+@premium_only_cmd()
+async def ship_cmd(ctx: commands.Context, target: discord.Member):
+    await ctx.message.delete()
+    percentage = random.randint(0, 100)
+    
+    async with ctx.typing():
+        try:
+            image_buf = await create_ship_image(ctx.author, target, percentage)
+            file = discord.File(fp=image_buf, filename="ship.png")
+            
+            embed = discord.Embed(
+                title="💞 Compatibility Match",
+                description=f"**{ctx.author.display_name}** and **{target.display_name}** are a **{percentage}%** match!",
+                color=discord.Color.from_str("#FF69B4")
+            )
+            embed.set_image(url="attachment://ship.png")
+            await ctx.send(file=file, embed=embed)
+        except Exception:
+            await ctx.send(f"💞 **{ctx.author.display_name}** x **{target.display_name}**: **{percentage}%**!")
 
 if __name__ == "__main__":
     bot.run(TOKEN)
