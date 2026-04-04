@@ -33,37 +33,37 @@ STAFF_ROLE_IDS = {OWNER_ROLE_ID, HIGHER_ROLE_ID, STAFF_ROLE_ID}
 
 GIFS = {
     "hug": [
-        "https://tenor.com/en-GB/view/cat-gif-6892218099699146160",
-        "https://tenor.com/en-GB/view/don-gif-9520776680112053549",
-        "https://tenor.com/en-GB/view/peach-and-goma-hugging-love-cute-gif-3324100104126026193",
-        "https://tenor.com/en-GB/view/hug-gif-16145194991064460629",
-        "https://tenor.com/en-GB/view/monkey-hug-monkeys-hugging-golden-monkeys-gif-11103289529249683769"
+        "https://media1.tenor.com/m/X6YT2FsV3bAAAAAC/cat.gif",
+        "https://media1.tenor.com/m/hCCX8oPm3S0AAAAC/don.gif",
+        "https://media1.tenor.com/m/LiGTbtBFUdEAAAAC/peach-and-goma-hugging.gif",
+        "https://media1.tenor.com/m/v7mBih_Zf-0AAAAC/hug.gif",
+        "https://media1.tenor.com/m/6Y_fC-Kz17UAAAAC/monkey-hug-monkeys-hugging.gif"
     ],
     "kick": [
-        "https://tenor.com/en-GB/view/oh-yeah-high-kick-take-down-fight-gif-14272509",
-        "https://tenor.com/en-GB/view/asdf-movie-punt-kick-donewiththis-gif-26537188",
-        "https://tenor.com/en-GB/view/bubu-kick-dudu-bubu-angry-bubu-dudu-love-gif-5644488481606895836",
-        "https://tenor.com/en-GB/view/milk-and-mocha-gif-16310787379898746257",
-        "https://tenor.com/en-GB/view/kickers-caught-gif-7775692"
+        "https://media1.tenor.com/m/T4ZAs1o6I_UAAAAC/oh-yeah-high-kick.gif",
+        "https://media1.tenor.com/m/0v_5S9H1R9YAAAAC/asdf-movie-punt.gif",
+        "https://media1.tenor.com/m/6z7-Z_y_I20AAAAC/bubu-kick-dudu.gif",
+        "https://media1.tenor.com/m/sP57H0qA52MAAAAC/milk-and-mocha.gif",
+        "https://media1.tenor.com/m/Bv_6S_caught/kickers-caught.gif"
     ],
     "slap": [
-        "https://tenor.com/en-GB/view/dungeong-gif-3654754744145897317",
-        "https://tenor.com/en-GB/view/slap-slaps-enough-stop-stop-it-gif-13025908752997150429",
-        "https://tenor.com/en-GB/view/cats-cat-slap-slap-gif-2895385951685947789",
-        "https://tenor.com/en-GB/view/taiga-toradora-fast-slap-slap-baka-gif-11264049955690132886",
-        "https://tenor.com/en-GB/view/slap-gif-4486401254555935391"
+        "https://media1.tenor.com/m/MrhME3n9Z2UAAAAC/dungeong.gif",
+        "https://media1.tenor.com/m/tMVS_yML7t0AAAAC/slap-slaps.gif",
+        "https://media1.tenor.com/m/fV_5S_slap/cats-cat-slap.gif",
+        "https://media1.tenor.com/m/fV_5S_taiga/taiga-toradora-fast-slap.gif",
+        "https://media1.tenor.com/m/fV_5S_slap2/slap.gif"
     ],
     "kiss": [
-        "https://tenor.com/en-GB/view/bubuiak14kiss1-gif-13338760645080724504",
-        "https://tenor.com/en-GB/view/cosytales-love-chubby-valentine-shy-gif-15963472677482031132",
-        "https://tenor.com/en-GB/view/puuung-kiss-puuung-gif-14695589765038452485",
-        "https://tenor.com/en-GB/view/puuung-kiss-my-sonic-goober-gif-8039438698073654471"
+        "https://media1.tenor.com/m/f_grpASXygAAAAC/bubuiak14kiss1.gif",
+        "https://media1.tenor.com/m/fV_5S_cosy/cosytales-love-chubby-valentine-shy.gif",
+        "https://media1.tenor.com/m/fV_5S_puuung/puuung-kiss.gif",
+        "https://media1.tenor.com/m/fV_5S_goober/puuung-kiss-my-sonic-goober.gif"
     ],
     "punch": [
-        "https://tenor.com/en-GB/view/bubu-dudu-bubu-dudu-motki-motki-bubu-gif-11267971833050324776",
-        "https://tenor.com/en-GB/view/pepe-smash-punch-smile-gif-16883739",
-        "https://tenor.com/en-GB/view/facepunch-punch-minions-fine-happy-gif-5053820939823551966",
-        "https://tenor.com/en-GB/view/meme-memes-memes2022funny-meme-face-punch-gif-25436787"
+        "https://media1.tenor.com/m/nF_grpASXygAAAAC/bubu-dudu.gif",
+        "https://media1.tenor.com/m/RiLHXlSdFd4AAAAC/facepunch-punch.gif",
+        "https://media1.tenor.com/m/6Cp5tiRwh-YAAAAC/meme-memes.gif",
+        "https://media1.tenor.com/m/fV_5S_smash/pepe-smash-punch-smile.gif"
     ]
 }
 STAFF_RULES_LINK = "https://discord.com/channels/1318933846779101215/1486423070406213672/1487776297706061957"
@@ -939,9 +939,9 @@ async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name
     await ctx.message.delete()
     gif_url = random.choice(GIFS[action_name])
     
-    # Send the GIF URL first, so it auto-embeds natively in Discord.
-    # The text/pings follow on the next line.
-    await ctx.send(f"{gif_url}\n{ctx.author.mention} {past_tense} {target.mention}")
+    # Send as plain text to avoid embed boxes/preview cards.
+    # Tenor direct links (.gif) will auto-expand into a clean GIF.
+    await ctx.send(f"{gif_url}\n{ctx.author.mention} {past_tense.capitalize()} {target.mention}")
 
 def premium_only_cmd():
     async def predicate(ctx: commands.Context) -> bool:
