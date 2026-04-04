@@ -1015,8 +1015,8 @@ async def ship_cmd(ctx: commands.Context, target: discord.Member):
             file = discord.File(fp=image_buf, filename="ship.png")
             
             # Per user request: Send as a clean message with the image
-            # and no embed box (to avoid messy UI)
-            content = f"**{ctx.author.name}** and **{target.name}** are a **{percentage}%** match!"
+            # and no embed box (to avoid messy UI). Mentions (pings) included.
+            content = f"{ctx.author.mention} and {target.mention} are a **{percentage}%** match!"
             await ctx.send(content=content, file=file)
         except Exception as e:
             await ctx.send(f"💞 **{ctx.author.display_name}** x **{target.display_name}**: **{percentage}%**!")
