@@ -27,6 +27,15 @@ Exclusive features for your most dedicated supporters:
 
 ---
 
+## 📚 Documentation
+
+Detailed documentation has been separated into the `docs/` folder for better readability:
+
+- [🤖 Bot Overview & Features](docs/overview.md)
+- [📜 Complete Commands List](docs/commands.md)
+
+---
+
 ## 🚀 Quick Start
 
 ### 📋 Prerequisites
@@ -52,19 +61,6 @@ Exclusive features for your most dedicated supporters:
    ```bash
    python main.py
    ```
-
----
-
-## 🤖 Premium Commands
-
-| Command | Action | GIF/Image |
-| :--- | :--- | :--- |
-| `-hug @user` | Hugs a user | Wholesome cuddle GIFs |
-| `-kick @user` | Kicks a user (fun) | High-kick anime/bear GIFs |
-| `-slap @user` | Slaps a user | Funny cat/penguin slap GIFs |
-| `-kiss @user` | Kisses a user | Romantic/cute kiss GIFs |
-| `-punch @user`| Punches a user | Intense anime punch GIFs |
-| `-ship @user` | Compatibility Match | 1000x320 Dynamic Image 💞 |
 
 ---
 
