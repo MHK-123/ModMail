@@ -23,7 +23,7 @@ Exclusive features for your most dedicated supporters:
   - `-slap @user`: Random slap GIF.
   - `-hug @user`: Wholesome hug GIF.
   - `-kiss @user`: Sweet kiss GIF.
-  - `-ship @user`: Dynamic compatibility match image generation using **Pillow**.
+  - `-ship @user`: Dynamic compatibility match image generation using a **Render-hosted FastAPI Rendering Service** (Playwright + HTML/CSS).
 
 ---
 
@@ -41,24 +41,20 @@ Detailed documentation has been separated into the `docs/` folder for better rea
 ### 📋 Prerequisites
 - **Python 3.10+**
 - **Discord Bot Token** (Intents: `Members`, `Message Content` enabled)
+- **SHIP_RENDER_URL**: URL of your deployed image-rendering microservice (Render.com).
 - **Role IDs**: Configured in `main.py` (Owner, Higher, Staff, Premium).
 
 ### 🛠️ Installation
-1. Clone the repository:
+1. **Deploy Render Service**: Use the provided `render-service/` folder to deploy to Render.com (using the `render.yaml` Blueprint).
+2. **Setup Bot**: Clone the repository to your bot hosting (e.g., GitHub Actions):
    ```bash
    git clone https://github.com/MHK-123/ModMail.git
    cd ModMail
    ```
-2. Install dependencies:
+3. **Environment Setup**: Add your `DISCORD_TOKEN` and `SHIP_RENDER_URL` to your environment variables or GitHub Secrets.
+4. **Install & Run**:
    ```bash
    pip install -r requirements.txt
-   ```
-3. Set up environment variables (`.env`):
-   ```env
-   DISCORD_TOKEN=your_token_here
-   ```
-4. Run the bot:
-   ```bash
    python main.py
    ```
 
@@ -71,6 +67,7 @@ The following IDs must be updated in `main.py`:
 - `REPORT_CHANNEL_ID`: Channel where ModMail threads are created.
 - `LOG_CHANNEL_ID`: Channel for bot action logs.
 - `PREMIUM_ROLE_ID`: ID of the role that unlocks premium commands.
+- `SHIP_RENDER_URL`: (Variable) The API endpoint for image generation.
 
 ---
 

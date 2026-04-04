@@ -18,7 +18,7 @@ Automates the administrative overhead of managing a staff team.
 ### 💎 Premium Membership
 Unlocks enhanced interactions for dedicated community members.
 - **Action Commands**: Access to exclusive interactive GIF commands like `-hug`, `-slap`, and `-punch`.
-- **Advanced Matchmaking**: Access to the `-ship` command with high-fidelity image generation.
+- **Advanced Matchmaking**: Access to the `-ship` command with high-fidelity image generation. This uses a **Hybrid Rendering Pipeline** powered by **Playwright** and **FastAPI** to create professional-grade graphics through a secondary microservice.
 
 ## 🛠️ Command Categories
 - **ModMail Management**: `reply`, `close`, `blacklist` (Interactive Buttons)

@@ -20,6 +20,7 @@ OWNER_ROLE_ID          =    # Owner role ID
 HIGHER_ROLE_ID         =    # Higher staff role ID
 STAFF_ROLE_ID          =    # Base staff role ID
 PREMIUM_ROLE_ID        =    # Premium role ID
+SHIP_RENDER_URL        =    # URL of your Render rendering service (required for -ship)
 ```
 
 ### Rules Channel
@@ -37,34 +38,54 @@ await user.send(f"...please review the rules here: <#1318959296884768798>")
 
 ---
 
-## 🤖 Creating the Discord Bot
+## 🛠️ Deployment Architecture (Hybrid)
+
+This bot uses a **Hybrid Cloud Architecture** for maximum performance and premium features:
+1. **GitHub Actions**: Run the bot logic (ModMail, events, roles).
+2. **Render.com**: Hosts the Image Rendering Microservice (Playwright + FastAPI).
+
+---
+
+## 🌎 Step 1: Deploy Render Service
+
+1. Log in to [Render.com](https://dashboard.render.com).
+2. Click **New** > **Web Service**.
+3. Point it to the `render-service/` folder in this repository.
+4. Set **Runtime** to `Docker` (using the provided `Dockerfile`).
+5. Once live, copy the **Service URL**.
+
+---
+
+## 🤖 Step 2: Creating & Setting the Discord Bot
 
 1. Go to [discord.com/developers/applications](https://discord.com/developers/applications)
 2. Click **New Application** → give it a name
 3. Go to **Bot** tab → click **Add Bot**
-4. Copy the **Bot Token** — you'll need this for `.env`
+4. Copy the **Bot Token** — you'll need this for environment variables.
 5. Under **Privileged Gateway Intents**, enable:
    - ✅ Server Members Intent
    - ✅ Message Content Intent
-6. Go to **OAuth2 → URL Generator**:
-   - Scopes: `bot`, `applications.commands`
-   - Permissions: `Send Messages`, `Send Messages in Threads`, `Create Public Threads`, `Embed Links`, `Manage Threads`, `Read Message History`, `Mention Everyone`, `Add Reactions`
 
 ---
 
-## 🔑 Environment File
+## 🔑 Step 3: Environment Configuration
 
+### GitHub Actions (Production)
+If you are running the bot on GitHub Actions, add these to your **Repository Secrets**:
+- `DISCORD_TOKEN`: Your bot token.
+- `SHIP_RENDER_URL`: Your Render service URL.
+
+### Local Development (.env)
 Create a file named `.env` in the same folder as `main.py`:
 
 ```
 DISCORD_TOKEN=your_bot_token_here
+SHIP_RENDER_URL=your_render_url_here
 ```
-
-> ⚠️ Never share or commit your `.env` file. Add it to `.gitignore`.
 
 ---
 
-## ▶️ Running Locally
+## ▶️ Running & Verification
 
 **Requirements:** Python 3.10+
 
@@ -76,16 +97,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-The bot will log in and sync slash commands automatically.
-
----
-
-## ☁️ Free Hosting
-
-### Option 1 — Railway (Recommended)
-1. Push your code to a private GitHub repo.
-2. Connect it to Railway.
-3. Add `DISCORD_TOKEN` in the **Variables** tab.
+The bot will log in and sync slash commands automatically. Verified Render images will be fetched via HTTP during the `-ship` command.
 
 ---
 
@@ -95,7 +107,8 @@ Send the buyer these files:
 
 ```
 ModMail/
-├── main.py              ← Core bot 
+├── main.py              ← Core bot logic
+├── render-service/      ← Image rendering microservice
 ├── requirements.txt     ← Dependencies
 ├── README.md            ← Feature reference
 └── GUIDE.md             ← This file

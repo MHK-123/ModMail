@@ -34,24 +34,24 @@ STAFF_ROLE_IDS = {OWNER_ROLE_ID, HIGHER_ROLE_ID, STAFF_ROLE_ID}
 
 GIFS = {
     "hug": [
-        "https://media1.tenor.com/m/X6YT2FsV3bAAAAAC/cat.gif",
-        "https://media1.tenor.com/m/hCCX8oPm3S0AAAAC/don.gif",
+        "https://media1.tenor.com/m/gdV0zgw4nZcAAAAC/hug.gif",
+        "https://media1.tenor.com/m/2bw-Zzp-mTMAAAAC/bear-hug.gif",
         "https://media1.tenor.com/m/LiGTbtBFUdEAAAAC/peach-and-goma-hugging.gif",
-        "https://media1.tenor.com/m/v7mBih_Zf-0AAAAC/hug.gif",
-        "https://media1.tenor.com/m/6Y_fC-Kz17UAAAAC/monkey-hug-monkeys-hugging.gif"
+        "https://media1.tenor.com/m/LiGTbtBFUdEAAAAC/peach-and-goma-hugging.gif",
+        "https://media1.tenor.com/m/LiGTbtBFUdEAAAAC/peach-and-goma-hugging.gif"
     ],
     "kick": [
-        "https://media1.tenor.com/m/T4ZAs1o6I_UAAAAC/oh-yeah-high-kick.gif",
-        "https://media1.tenor.com/m/0v_5S9H1R9YAAAAC/asdf-movie-punt.gif",
+        "https://media1.tenor.com/m/TDQXdEBNNjUAAAAC/milk-and-mocha.gif",
         "https://media1.tenor.com/m/6z7-Z_y_I20AAAAC/bubu-kick-dudu.gif",
         "https://media1.tenor.com/m/sP57H0qA52MAAAAC/milk-and-mocha.gif",
-        "https://media1.tenor.com/m/rXW_XqZ2M-YAAAAC/kick.gif"
+        "https://media1.tenor.com/m/rXW_XqZ2M-YAAAAC/kick.gif",
+        "https://media1.tenor.com/m/TDQXdEBNNjUAAAAC/milk-and-mocha.gif"
     ],
     "slap": [
-        "https://media1.tenor.com/m/MrhME3n9Z2UAAAAC/dungeong.gif",
+        "https://media1.tenor.com/m/fZQYHVUDfckAAAAC/slap.gif",
         "https://media1.tenor.com/m/tMVS_yML7t0AAAAC/slap-slaps.gif",
         "https://media1.tenor.com/m/OY6vL9fL8P0AAAAC/cats-cat-slap.gif",
-        "https://media1.tenor.com/m/8Y6E-L_Q-p0AAAAC/taiga-toradora.gif",
+        "https://media1.tenor.com/m/Z7sll98IcRMAAAAC/slap-hand-slap.gif",
         "https://media1.tenor.com/m/4Y6vL9fL8P0AAAAC/slap.gif"
     ],
     "kiss": [
@@ -939,6 +939,10 @@ async def modmail_status(interaction: discord.Interaction):
 async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name: str, past_tense: str):
     await ctx.message.delete()
     gif_url = random.choice(GIFS[action_name])
+    fallback_url = "https://media.tenor.com/LiGTbtBFUdEAAAAC/peach-and-goma-hugging.gif"
+    
+    # ── Explicit Logging ──────────────────────────────────────────────────
+    print(f"GIF Selected: {action_name} -> {gif_url}")
     
     # FINAL STABILIZED SOLUTION: Send as a native Discord file with safeguards
     try:
@@ -956,15 +960,17 @@ async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name
                 else:
                     # Log failure details for debugging
                     print(f"GIF Fetch Failed: {resp.status}, Content-Type: {resp.content_type}, URL: {gif_url}")
-                    # Fallback to clean embed (prevents Tenor preview cards)
-                    embed = discord.Embed(color=0x2b2d31)
-                    embed.set_image(url=gif_url)
-                    await ctx.send(embed=embed)
+                    # Fallback to direct stable GIF
+                    async with session.get(fallback_url, headers=headers) as fall_resp:
+                        if fall_resp.status == 200:
+                            fall_data = io.BytesIO(await fall_resp.read())
+                            fall_data.seek(0)
+                            await ctx.send(file=discord.File(fall_data, filename="action.gif"))
     except Exception as e:
         print(f"Action GIF Error: {e}")
         # Final fallback - clean embed (NEVER send gif_url in content)
         embed = discord.Embed(color=0x2b2d31)
-        embed.set_image(url=gif_url)
+        embed.set_image(url=fallback_url)
         await ctx.send(embed=embed)
         
     # Send the mention/text message separately AFTER the GIF

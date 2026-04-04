@@ -73,4 +73,4 @@ Sends a sweet kiss GIF, mentioning the target user.
 Sends an intense punch GIF, mentioning the target user.
 
 ### `-ship @user`
-Generates a highly-customized, premium 1000x500 image showing the compatibility percentage between the command user and the target user. Includes glowing aesthetics and avatars.
+Generates a highly-customized, premium 1000x500 image showing the compatibility percentage between the command user and the target user. This command uses a **Render-hosted FastAPI Rendering Service** with **Playwright** to generate professional HTML-to-PNG graphics with glassmorphism and glowing effects.
