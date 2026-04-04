@@ -939,10 +939,11 @@ async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name
     await ctx.message.delete()
     gif_url = random.choice(GIFS[action_name])
     
-    # Requirement: GIF first, then text with mentions.
-    # We send the GIF URL directly. Discord will auto-expand it.
-    # Since these are media.tenor.com direct links, they won't show the Tenor page preview card.
-    await ctx.send(gif_url)
+    # Requirement: Send the GIF via embed to avoid messy Tensor link previews.
+    embed = discord.Embed(color=0x2b2d31) # Uses discord's dark background color to make it look clean
+    embed.set_image(url=gif_url)
+    
+    await ctx.send(embed=embed)
     await ctx.send(f"{ctx.author.mention} {past_tense.capitalize()} {target.mention}")
 
 def premium_only_cmd():
