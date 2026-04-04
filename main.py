@@ -933,12 +933,7 @@ async def modmail_status(interaction: discord.Interaction):
 async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name: str, past_tense: str):
     await ctx.message.delete()
     gif_url = random.choice(GIFS[action_name])
-    embed = discord.Embed(
-        description=f"💖 **{ctx.author.display_name}** {past_tense} **{target.display_name}**!",
-        color=discord.Color.from_str("#5865F2")
-    )
-    embed.set_image(url=gif_url)
-    await ctx.send(content=target.mention, embed=embed)
+    await ctx.send(f"{gif_url}\n{ctx.author.mention} {past_tense} {target.mention}")
 
 def premium_only_cmd():
     async def predicate(ctx: commands.Context) -> bool:
