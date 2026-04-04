@@ -939,12 +939,23 @@ async def _action_cmd(ctx: commands.Context, target: discord.Member, action_name
     await ctx.message.delete()
     gif_url = random.choice(GIFS[action_name])
     
-    # Requirement: Send the GIF via embed to avoid messy Tensor link previews.
-    embed = discord.Embed(color=0x2b2d31) # Uses discord's dark background color to make it look clean
-    embed.set_image(url=gif_url)
-    
-    await ctx.send(embed=embed)
-    await ctx.send(f"{ctx.author.mention} {past_tense.capitalize()} {target.mention}")
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(gif_url) as resp:
+                if resp.status == 200:
+                    data = io.BytesIO(await resp.read())
+                    file = discord.File(data, filename=f"{action_name}.gif")
+                    # Send the GIF natively as a file attachment
+                    await ctx.send(file=file)
+                else:
+                    await ctx.send(gif_url, suppress_embeds=True)
+    except Exception as e:
+        print(f"Error fetching GIF: {e}")
+        await ctx.send(gif_url, suppress_embeds=True)
+        
+    # Send the action text separately without triggering user pings
+    allowed_mentions = discord.AllowedMentions(users=False)
+    await ctx.send(f"{ctx.author.mention} {past_tense.capitalize()} {target.mention}", allowed_mentions=allowed_mentions)
 
 def premium_only_cmd():
     async def predicate(ctx: commands.Context) -> bool:
