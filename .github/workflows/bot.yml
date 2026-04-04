@@ -1,35 +1,61 @@
-name: DungeonKeeper Bot
+name: "🛡️ DungeonKeeper: High-Availability Bot Runner"
 
 on:
-  workflow_dispatch:       # allow manual trigger from GitHub UI
+  workflow_dispatch: # Enable manual starting from GitHub Actions tab
   schedule:
-    - cron: "*/10 * * * *" # re-trigger every 10 min to keep bot alive after timeout
+    - cron: "*/10 * * * *" # Triggers every 10 min to check bot status
+
+# Ensure only one instance of the bot runs to prevent role update conflicts
+concurrency:
+  group: "dungeonkeeper-bot"
+  cancel-in-progress: false # Do not interrupt a running bot instance
 
 jobs:
-  run-bot:
+  premium_runner:
+    name: "🚀 Bot Live Monitoring & Execution"
     runs-on: ubuntu-latest
-    concurrency:
-      group: dungeonkeeper-bot
-      cancel-in-progress: false  # never interrupt a running bot instance
+    timeout-minutes: 350 # Close to 6-hour limit to prevent GitHub force-closure
 
     steps:
-      - name: Checkout repository
+      - name: "📂 Checkout Repository"
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
+      - name: "🐍 Setup Python 3.11 Environment"
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: 'pip' # Speeds up installation by caching dependencies
 
-      - name: Install dependencies
+      - name: "📦 Synchronize Dependencies"
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run DungeonKeeper Bot
+      - name: "🛡️ Initializing DungeonKeeper Bot Engine"
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
         run: |
-          echo "Bot starting at $(date)"
-          timeout 19200 python main.py || true   # 5h 20m — fits GitHub's 6h job limit
-          echo "Bot stopped at $(date)"
+          echo "=========================================="
+          echo "🚀 DUNGEONKEEPER ENGINE STARTING"
+          echo "🕒 Timestamp: $(date)"
+          echo "=========================================="
+          
+          # Use timeout to safely end before GitHub's 6h hard limit
+          # 20400 seconds = 340 minutes (5h 40m)
+          timeout 20400 python main.py || {
+            exit_code=$?
+            if [ $exit_code -eq 124 ]; then
+              echo "✅ Scheduled duty period ended. Preparing for seamless transition."
+            else
+              echo "❌ Bot crashed with exit code: $exit_code"
+              exit $exit_code
+            fi
+          }
+
+      - name: "📊 Session Termination Logs"
+        if: always() # Always run to get logs even on crash
+        run: |
+          echo "=========================================="
+          echo "🏁 SESSION ENDED"
+          echo "🕒 Timestamp: $(date)"
+          echo "=========================================="
