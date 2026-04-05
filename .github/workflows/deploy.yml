@@ -1,0 +1,35 @@
+name: 🚀 Deploy to VPS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Checkout Code
+        uses: actions/checkout@v3
+
+      - name: 🚀 SSH & Auto-Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/ModMail  # CHANGE THIS to your actual path on VPS
+            git pull origin main
+            
+            # Update Python dependencies
+            pip install -r requirements.txt
+            pip install -r render-service/requirements.txt
+            
+            # Install Playwright browser
+            python3 -m playwright install chromium
+            
+            # Restart services
+            sudo systemctl restart dungeon-bot
+            sudo systemctl restart dungeon-api
+            
+            echo "✅ Deployment Successful!"

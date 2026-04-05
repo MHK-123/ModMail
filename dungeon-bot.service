@@ -1,0 +1,15 @@
+[Unit]
+Description=DungeonKeeper ModMail Bot
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/ModMail
+EnvironmentFile=/home/ubuntu/ModMail/.env
+ExecStart=/usr/bin/python3 main.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
