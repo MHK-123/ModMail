@@ -1040,7 +1040,11 @@ async def create_ship_image(user1: discord.Member, user2: discord.Member, percen
 @bot.command(name="ship")
 @premium_only_cmd()
 async def ship_cmd(ctx: commands.Context, target: discord.Member):
-    await ctx.message.delete()
+    try:
+        await ctx.message.delete()
+    except Exception as e:
+        print(f"Note: Could not delete command message: {e}")
+    
     percentage = random.randint(0, 100)
     
     async with ctx.typing():
