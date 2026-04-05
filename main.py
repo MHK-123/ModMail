@@ -36,25 +36,38 @@ GIFS = {
     "hug": [
         "https://media1.tenor.com/m/NGFif4dxa-EAAAAC/hug-hugs.gif",
         "https://media1.tenor.com/m/ZWnVRfAnxOcAAAAd/miss-you.gif",
-        "https://media1.tenor.com/m/KtQDZsfPMnQAAAAC/couple-couple-hug.gif"
+        "https://media1.tenor.com/m/KtQDZsfPMnQAAAAC/couple-couple-hug.gif",
+        "https://media1.tenor.com/m/2bw-Zzp-mTMAAAAC/bear-hug.gif",
+        "https://media1.tenor.com/m/D0iWFLbh1OcAAAAC/quby-qubyhug.gif"
     ],
     "kick": [
         "https://media1.tenor.com/m/TDQXdEBNNjUAAAAC/milk-and-mocha.gif",
         "https://media1.tenor.com/m/iHMz2YvHDvgAAAAC/anuragita-anuragita-couple.gif",
-        "https://media1.tenor.com/m/tmR_L4D-tNQAAAAC/get-out-of-here-kick.gif"
+        "https://media1.tenor.com/m/tmR_L4D-tNQAAAAC/get-out-of-here-kick.gif",
+        "https://media1.tenor.com/m/4QRb5g4yp_QAAAAC/stop-playing-couple.gif",
+        "https://media1.tenor.com/m/ztHpFwsax84AAAAC/hau-zozo-smile.gif",
+        "https://media1.tenor.com/m/100td0mAPl4AAAAC/move-go-away.gif"
     ],
     "slap": [
         "https://media1.tenor.com/m/fZQYHVUDfckAAAAC/slap.gif",
         "https://media1.tenor.com/m/nFHxwVUqNZYAAAAC/taiga-toradora.gif",
-        "https://media1.tenor.com/m/THVaTmoOx7UAAAAC/midnightgif300.gif"
+        "https://media1.tenor.com/m/THVaTmoOx7UAAAAC/midnightgif300.gif",
+        "https://media1.tenor.com/m/TVPYqh_E1JYAAAAC/peach-goma-peach-and-goma.gif",
+        "https://media1.tenor.com/m/KC56LsHlsY0AAAAd/cats-cat-slap.gif",
+        "https://media1.tenor.com/m/UtYlhh7IKywAAAAC/cute-rabbit-emoji-beating.gif"
     ],
     "kiss": [
         "https://media1.tenor.com/m/VcR7PqtHqkkAAAAd/besos.gif",
-        "https://media1.tenor.com/m/e4FVWGXwhSAAAAAC/kiss-love.gif"
+        "https://media1.tenor.com/m/e4FVWGXwhSAAAAAC/kiss-love.gif",
+        "https://media1.tenor.com/m/6dBdEsXHESAAAAAC/kiss.gif",
+        "https://media1.tenor.com/m/4TSAv5_K3LgAAAAC/kiss-bear-kiss.gif",
+        "https://media1.tenor.com/m/UTKy8f-8Dq4AAAAC/love-love-you.gif"
     ],
     "punch": [
         "https://media1.tenor.com/m/4gk1E75rDNYAAAAd/cat-punch.gif",
-        "https://media1.tenor.com/m/OLD43n7oSyoAAAAC/ppdaraa-punch.gif"
+        "https://media1.tenor.com/m/OLD43n7oSyoAAAAC/ppdaraa-punch.gif",
+        "https://media1.tenor.com/m/Rx_GvBqQZMcAAAAC/punch-punch-you.gif",
+        "https://media1.tenor.com/m/sA-QxfjmpggAAAAC/rascal-rascal-does-not-dream-of-bunny-girl-senpai.gif"
     ]
 }
 STAFF_RULES_LINK = "https://discord.com/channels/1318933846779101215/1486423070406213672/1487776297706061957"
